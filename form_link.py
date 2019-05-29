@@ -9,6 +9,8 @@ from wtforms import TextField, HiddenField, ValidationError, RadioField,\
 from wtforms.validators import Required
 import bokeh.plotting as plt
 from bokeh.models import Plot,Tool
+from bokeh.resources import CDN
+from bokeh.embed import file_html
 import scipy.constants
 import itur
 import numpy as np
@@ -55,13 +57,13 @@ if __name__ == '__main__':
             p.line(d, itur.models.itu530.rain_attenuation(0, 0, d, f, el, 0.01, tau, rr), line_width=2)
             plot = Plot()
             plot.add_tools()
-
+            html = file_html(p, CDN, "my plot")
             # plt.plot(itur.models.itu530.rain_attenuation(geoloc[0],geoloc[1], d, f2, el, 0.01,tau,rr),label='66GHz')
             # plt.xlabel('Distance (km)')
             # plt.ylabel('Attenuation (dB)')
             # plt.legend()
             #plt.title()
-            plt.show(p)
+            return html
         return render_template('index.html', form=form)
 
 
