@@ -106,4 +106,4 @@ if __name__ == '__main__':
     def coucou():
         return 'Coucou'
 
-    app.run(host='0.0.0.0',debug=True)
+    app.run(host='0.0.0.0',port=80,debug=True)
