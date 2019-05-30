@@ -12,16 +12,41 @@
     </script>
 <div class="container">
   <h1>LinkBudget</h1>
-  <h3>Link Profil</h3>
+
   <pouet>
   {{ wtf.quick_form(form, form_type='horizontal', button_map={'submit_button': 'primary'})
   }}
     </pouet>
-  <h3>Equipment Profil</h3>
 
 
 <script>
-  $("#cb0").change(function() {Sijax.request('coucou',"#cb0");});
+  $("#ep-cb0").change(function()
+    {
+    $xpic = $('#ep-cb0').val();
+    Sijax.request('cb0',[$xpic]);});
+
+  $("#ep-cb1").change(function()
+    {
+    $equi = $('#ep-cb1').val();
+    Sijax.request('cb1',[$xpic,$equi]);});
+
+  $("#ep-fe").change(function()
+    {
+    $freq = $('#ep-fe').val();
+    Sijax.request('fe',[$xpic,$equi,$freq]);});
+
+  $("#ep-carde").change(function()
+    {
+    $card = $('#ep-carde').val();
+    Sijax.request('carde',[$xpic,$equi,$freq,$card]);});
+
+  $("#ep-cpe").change(function()
+    {
+    $bandw = $('#ep-cpe').val();
+    Sijax.request('cpe',[$xpic,$equi,$freq,$card,$bandw]);});
+
+
+
 </script>
 
 </div>
