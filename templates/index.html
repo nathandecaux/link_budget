@@ -5,11 +5,22 @@
 
 {% block content %}
 {{util.flashed_messages(dismissible=True)}}
-  <script src="https://code.jquery.com/jquery-1.10.2.js"></script>
+
+
+<script src="https://code.jquery.com/jquery-1.10.2.js" xmlns:google.maps.Marker></script>
      <script type="text/javascript" src="/static/js/sijax/sijax.js"></script>
     <script type="text/javascript">
         {{ g.sijax.get_js()|safe }}
     </script>
+<script>
+    $( document ).ready(function() {
+    $("#lp-ele").attr('required', 'required');
+    $("#lp-p_entry").attr('required', 'required')
+
+});
+</script>
+
+
 <div class="container">
   <h1>LinkBudget</h1>
 
@@ -18,9 +29,8 @@
   }}
     </pouet>
 
-
 <script>
-  $("#ep-cb0").change(function()
+  $("#ep-cb0").click(function()
     {
     $xpic = $('#ep-cb0').val();
     Sijax.request('cb0',[$xpic]);});
@@ -44,6 +54,33 @@
     {
     $bandw = $('#ep-cpe').val();
     Sijax.request('cpe',[$xpic,$equi,$freq,$card,$bandw]);});
+
+  $("#lp-rre").focus(function() {
+        $("#lp-xe").attr('value', '');
+        $("#lp-xe").attr('readonly', 'readonly');
+    });
+
+  $("#lp-rre").click(function() {
+        $("#lp-rre").removeAttr('readonly');
+    });
+
+
+  $("#lp-xe").focus(function() {
+            $("#lp-rre").removeAttr('value');
+            $("#lp-rre").attr('readonly', 'readonly');
+        });
+
+  $("#lp-xe").click(function() {
+        $("#lp-xe").removeAttr('readonly');
+    });
+
+  $("#submit_button").mouseenter(function() {
+        if (($("#lp-xe").val() == "") && ($("#lp-rre").val()) == "" )
+        {
+            alert("Please enter the location or the rainrate")
+        }
+    });
+
 
 
 
