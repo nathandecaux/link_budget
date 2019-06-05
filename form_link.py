@@ -409,13 +409,9 @@ if __name__ == '__main__':
                 # print(f(d))
                 p.line(d, res)
                 html = html + file_html(p, CDN, "my plot")
-            f= open("graphs.html","w")
-
+            f= open("templates/graphs.html","w")
             f.write(html)
-            webbrowser.register_standard_browsers()
-            webbrowser.open_new_tab('graphs.html')
-
-
+            return render_template('graphs.html', graph=html)
 
         return render_template('index.html', form=form)
 
@@ -450,8 +446,5 @@ if __name__ == '__main__':
             return render_template('tables.html',table=eb_stab,ex_tab=ex_tab,e_mw_tab=e_mw_tab,mw_stab=mw_stab,mw_xtab=mw_xtab)
 
         return render_template('index.html',form=form)
-
-
-
 
     app.run(host='0.0.0.0',port=80,debug=True)
