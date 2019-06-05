@@ -159,7 +159,7 @@ def getScenarii():
     for pro in e_bands:
         for leg in legacy:
             if leg[1] == 18.0 or leg[1] == 23:
-                if np.isclose(float(pro[-3]+leg[-3]),CIR,atol=MARG) and not np.isclose(float(pro[-3]),CIR,atol=MARG):
+                if np.isclose(float(pro[-3]+leg[-3]),CIR,atol=MARG) and not np.isclose(float(pro[-3]),CIR,atol=MARG) and not np.isclose(float(leg[-3]),CIR,atol=MARG):
                     e_mw_ditems.append(DualItem(pro[0],leg[0],pro[-3],leg[-3],pro[-3]+leg[-3],pro[-1]))
                     outstr=outstr+str(pro[0])+' + '+str(leg[0])+' -- '+str(pro[-3]+leg[-3])+' Mbps -- '+str(pro[-1])+'%\n'
 
