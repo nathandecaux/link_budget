@@ -442,7 +442,8 @@ if __name__ == '__main__':
 
             poubelle.MARG = float(form.sp.margin.data)
             poubelle.POLAR = 0 if link.polar.data=='h' else 90 # float(form.polar.data)
-            poubelle.RR = float(link.rre.data)
+            if link.rre.data != None:
+                poubelle.RR = float(link.rre.data)
             poubelle.AVAILABILITY  = float(link.p_entry.data)
             poubelle.CIR = float(form.sp.capa.data)
             [eb_stab,ex_tab,e_mw_tab,mw_stab,mw_xtab] = poubelle.getScenarii()

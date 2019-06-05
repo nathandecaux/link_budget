@@ -29,7 +29,7 @@ CIR = 10000.0
 MARG = 300.0
 GEOLOCATE = (0,0)
 ELEVATION = 0.4
-RR = 47
+RR = 0
 POLAR = 90
 DIA1 = 0.3
 DIA2 = 0.3
@@ -73,6 +73,7 @@ def getAntGain(freq):
     for val in diameters :
         gainList[val] = np.round(10*np.log10(0.5*((np.pi*val*freq)*np.power(10,9)/scipy.constants.speed_of_light)**2),1)
     return gainList
+
 def getAntGain(dia,freq):
     return np.round(10*np.log10(0.5*((np.pi*dia*freq)*np.power(10,9)/scipy.constants.speed_of_light)**2),1)
 
@@ -103,7 +104,7 @@ def getProfilperCapa(capa=0,xpic=False,eband=False,multiB=False):
     return profils
 
 
-def getProb(profs,d,p,xpic=False):
+def getProb(profs,d,p,rr,xpic=False):
     good_pro = list()
     for prof in profs:
         GAIN1 = getAntGain(DIA1,prof[1])
@@ -111,15 +112,16 @@ def getProb(profs,d,p,xpic=False):
         wl = float(scipy.constants.speed_of_light / (prof[1] * (10 ** 9)))
         att= prof[2] + GAIN1 + GAIN2 - float(prof[-1]) - 20 * np.log10((4 * pi * d * 1000) / wl)
         if xpic:
-            proba = 100 - itur.models.itu530.inverse_rain_attenuation(GEOLOCATE[0], GEOLOCATE[1], d, prof[1],ELEVATION, att, 0, RR).value
+            proba = 100 - itur.models.itu530.inverse_rain_attenuation(GEOLOCATE[0], GEOLOCATE[1], d, prof[1],ELEVATION, att, 0, rr).value
         else:
-            proba = 100 - itur.models.itu530.inverse_rain_attenuation(GEOLOCATE[0],GEOLOCATE[1],d,prof[1],ELEVATION,att,POLAR,RR).value
+            proba = 100 - itur.models.itu530.inverse_rain_attenuation(GEOLOCATE[0],GEOLOCATE[1],d,prof[1],ELEVATION,att,POLAR,rr).value
         if proba > p:
             prof.append(proba)
             good_pro.append(prof)
     return good_pro
 
 def getScenarii():
+    rr = RR
     outstr = ''
     e_band_sitems = list()
     e_xpic_items = list()
@@ -127,11 +129,11 @@ def getScenarii():
     mw_sitems = list()
     mw_items = list()
     profils = getProfilperCapa(CIR)
-    if(GEOLOCATE != (0,0)):
+    if(GEOLOCATE != (0,0) and rr == 0):
         itur.models.itu837.change_version(6)
-        RR = itur.models.itu837.rainfall_rate(GEOLOCATE[0], GEOLOCATE[1], 0.01)
+        rr = itur.models.itu837.rainfall_rate(GEOLOCATE[0], GEOLOCATE[1], 0.01)
     outstr = '---- eBand (1+0) ----\n'
-    good_pro = getProb(profils,DISTANCE,AVAILABILITY)
+    good_pro = getProb(profils,DISTANCE,AVAILABILITY,rr)
     # while flag==0:
     #
     #     GAIN1 =GAIN1+10
@@ -144,15 +146,15 @@ def getScenarii():
     db = tinydb.TinyDB('db_huawei_XPIC.json')
     table = getProfilperCapa(0,True,True,True)
     e_bands = list()
-    e_bands = getProb(table, DISTANCE, AVAILABILITY,True)
+    e_bands = getProb(table, DISTANCE, AVAILABILITY,rr,True)
     for pro in e_bands:
         if np.isclose(float(pro[-3])*2,CIR,atol=MARG):
             e_xpic_items.append(SingleItem(pro[0],pro[-3]*2,pro[-1]))
             outstr=outstr+str(pro[0])+' -- '+str(pro[-3]*2)+' Mbps -- '+str(pro[-1])+'%\n'
     table = getProfilperCapa(0,False,True,True)
-    e_bands = getProb(table, DISTANCE, AVAILABILITY,False)
+    e_bands = getProb(table, DISTANCE, AVAILABILITY,rr,False)
     table = getProfilperCapa(0,False,False,True)
-    legacy = getProb(table, DISTANCE, AVAILABILITY,False)
+    legacy = getProb(table, DISTANCE, AVAILABILITY,rr,False)
     outstr=outstr+'---- eBand + MW ----\n'
     for pro in e_bands:
         for leg in legacy:
@@ -168,7 +170,7 @@ def getScenarii():
             outstr=outstr+str(prof[0])+' -- '+str(prof[-3])+' Mbps -- '+str(prof[-1])+'%\n'
 
     table = getProfilperCapa(0,True,False,True)
-    legacy = getProb(table, DISTANCE, AVAILABILITY,True)
+    legacy = getProb(table, DISTANCE, AVAILABILITY,rr,True)
     outstr=outstr+'---- MW (XPIC 2+0) ----\n'
     for pro in legacy:
         if np.isclose(float(pro[-3])*2, CIR, atol=MARG):
