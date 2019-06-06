@@ -21,6 +21,7 @@ import os,sys
 import webbrowser
 import pickle
 import poubelle
+from make_graph import MakeGraph
 import requests
 from geolocation.main import GoogleMaps
 
@@ -85,9 +86,7 @@ class GlobalForm(Form):
     submit_button = SubmitField('Submit Form')
 
 if __name__ == '__main__':
-    app = Flask(__name__)
-
-
+    app = Flask(__name__,static_url_path='/static')
     path = os.path.join('.', os.path.dirname(__file__), 'static/js/sijax/')
     app.config['SIJAX_STATIC_PATH'] = path
     app.config['SIJAX_JSON_URI'] = '/static/js/sijax/json2.js'
@@ -98,8 +97,8 @@ if __name__ == '__main__':
     app.config['SECRET_KEY'] = 'devkey'
 
 
-    @flask_sijax.route(app,'/')
-    def index():
+    @flask_sijax.route(app,'/huawei')
+    def huawei():
         mods_list = list()
         #form = GlobalForm()
         form = GlobalForm()
@@ -292,126 +291,14 @@ if __name__ == '__main__':
             g1a=poubelle.getAntGain(d1a,freq)
             g1b=poubelle.getAntGain(d1b,freq)
             am = ep.am.data
-            html = ''
-
-            #<--- Constants --->
-            pi = float(scipy.constants.pi)
-            wl = float(scipy.constants.speed_of_light / (freq * (10 ** 9)))
-
-            def getTx(mod):
-                user = tinydb.Query()
-                if xpic == '1':
-                    db = tinydb.TinyDB('db_huawei_XPIC.json')
-                else:
-                    db = tinydb.TinyDB('db_huawei.json')
-                table = db.table(equip)
-                row = table.search((user.MODEL.search('(' + card + ')')) & (user.BAND_DESIGNATOR == float(freq)) & (
-                        user.BANDWIDTH == float(bw)) & (user.MODULATION_TYPE == str(mod)))
-                return row[0]['MAX_TX_POWER']
-
-            def getCapa(mod):
-                user = tinydb.Query()
-                if xpic == '1':
-                    db = tinydb.TinyDB('db_huawei_XPIC.json')
-                else:
-                    db = tinydb.TinyDB('db_huawei.json')
-                table = db.table(equip)
-                row = table.search((user.MODEL.search('(' + card + ')')) & (user.BAND_DESIGNATOR == float(freq)) & (
-                        user.BANDWIDTH == float(bw)) & (user.MODULATION_TYPE == str(mod)))
-                return row[0]['CAPACITY']
-
-            def getRxThr(mod=''):
-                user = tinydb.Query()
-                if xpic == '1':
-                    db = tinydb.TinyDB('db_huawei_XPIC.json')
-                else:
-                    db = tinydb.TinyDB('db_huawei.json')
-                # manu='Ericsson',boolAM,equip,fre,modem,bw,mod
-                # cb1 = equip , fe = freq, carde = card_modem, cpe = bandwidth , ref_mode = modulation
-
-                if mod == '':
-                    mod = ref_mod
-                table = db.table(equip)
-                row = table.search((user.MODEL.search('(' + card + ')')) & (user.BAND_DESIGNATOR == float(freq)) & (
-                            user.BANDWIDTH == float(bw)) & (user.MODULATION_TYPE == str(mod)))
-                if (am == '1'):
-                    return row[0]['TYP_RX_THRESHOLD3'] + row[0]['ACM_DROP_OFFSET']
-                else:
-                    return row[0]['TYP_RX_THRESHOLD3']
-            modulation_level = dict()
-            def getThrList():
-
-                user = tinydb.Query()
-                if xpic == '1':
-                    db = tinydb.TinyDB('db_huawei_XPIC.json')
-                else:
-                    db = tinydb.TinyDB('db_huawei.json')
-
-                modulations = bandwCh(None,xpic,equip,freq,card,bw)
-                table = db.table(equip)
-                for mod in modulations:
-                    modulation_level[mod] = getRxThr(mod)
-            html = ''
-            d = np.arange(0.01, 20, 0.01)
-            if(form.mf.rainp.data):
-
-                graphs[0] = plt.figure(title='Rain-caused exceeded attenuation according to the distance',x_axis_label = 'Distance (km)',y_axis_label = 'Attenuation (dB)')
-                graphs[0].line(d, itur.models.itu530.rain_attenuation(0, 0, d, freq, el, 0.01, tau, rr), line_width=2)
-                graphs[0].add_tools(HoverTool())
-                html = html + file_html(graphs[0], CDN, "my plot")
-
-            if(form.mf.modp.data):
-                p=plt.figure(title='Capacity according to the distance',x_axis_label = 'Distance (km)',y_axis_label = 'Capacity (Mbps)')
-                getThrList()
-                # print(str(pi)+' -- '+str(tx1)+' -- '+str(g1a)+' -- '+str(g1b)+' -- '+str(20*np.log10((4*pi*9.94*1000)/wl)))
-                rain_att = list()
-                rain_att =  (g1a + g1b - 20 * np.log10(
-                    (4 * pi * d * 1000) / wl) - itur.models.itu530.rain_attenuation(geoloc[0], geoloc[1], d, freq, el, p0,
-                                                                                    tau, rr).value)
-                mod_d = list()
-                levels = list(modulation_level.values())
-                mods_lab = list(modulation_level.keys())
-                tx_mod = dict()
-                capa_mod = dict()
-                for lab in mods_lab:
-                    tx_mod[lab]=getTx(lab)
-                    capa_mod[lab]=getCapa(lab)
-                capaline = list()
-
-                for val in rain_att:
-                    max_mod = -100
-                    match = False
-                    for lab,mod in modulation_level.items():
-                        if val+tx_mod[lab]> mod:
-                            max_mod = mod
-                            capa = capa_mod[lab]
-                            match=True
-                    capaline.append(float(capa)) if match else capaline.append(0)
-                p.line(d, capaline)
-                p.add_tools(HoverTool())
-                html = html+file_html(p, CDN, "my plot")
-                # plt.hlines(-100,0,20,label='Rx Sensitivity',linestyles='dotted',colors=cmap(random.randint(1,20)))
-                # plt.plot(tx2+g2a+g2b-itur.models.itu530.rain_attenuation(geoloc[0],geoloc[1], d, f2, el, 0.01,tau,rr).value-20*np.log((4*pi*d)/wl),label=str(f2)+'GHz')
-            if(form.mf.availp.data):
-                rx_thr = getRxThr(ref_mod)
-                tx1 = getTx(ref_mod)
-                res = list()
-                p=plt.figure(title='Availability according to the distance',x_axis_label = 'Distance (km)',y_axis_label = 'Availability')
-                for dcrt in d:
-                    att_max = tx1 + g1a + g1b - float(rx_thr) - 20 * np.log10((4 * pi * dcrt * 1000) / wl)
-                    val = float()
-
-                    val = np.nan_to_num(itur.models.itu530.inverse_rain_attenuation(geoloc[0], geoloc[1], dcrt, freq, el, att_max, tau,rr).value)
-                    val = 100 - round(val, 5)
-                    res.append(val)
-                # z = np.polyfit(d,res,10)
-                # f = np.poly1d(z)
-                # print(f(d))
-                p.line(d, res)
-                html = html + file_html(p, CDN, "my plot")
-            f= open("templates/graphs.html","w")
+            #def __init(self,d1a,d1b,el,geoloc,rr,tau,p0,xpic,equip,freq,card,bw,ref_mod,rainp,modp,availp):
+            checks = [form.mf.rainp.data,form.mf.modp.data,form.mf.availp.data]
+            graph = MakeGraph(g1a,g1b,el,geoloc,rr,tau,p0,xpic,equip,freq,card,bw,ref_mod,checks[0],checks[1],checks[2])
+            html = graph.mkplots()
+            f = open("templates/graphs.html", "w")
             f.write(html)
             return render_template('graphs.html', graph=html)
+            # return render_template('graphs.html', graph=html)
 
         return render_template('index.html', form=form)
 

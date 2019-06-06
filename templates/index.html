@@ -7,7 +7,7 @@
 {{util.flashed_messages(dismissible=True)}}
 
 
-<script src="https://code.jquery.com/jquery-1.10.2.js" xmlns:google.maps.Marker></script>
+<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
      <script type="text/javascript" src="/static/js/sijax/sijax.js"></script>
     <script type="text/javascript">
         {{ g.sijax.get_js()|safe }}
@@ -16,20 +16,35 @@
     $( document ).ready(function() {
     $("#lp-ele").attr('required', 'required');
     $("#lp-p_entry").attr('required', 'required')
-
+    if (($("#ep-cb0").val() == "Yes") || ($("#ep-cb0").val()) == "No" )
+    {
+        $xpic = $('#ep-cb0').val();
+        Sijax.request('cb0',[$xpic]);
+    }
 });
 </script>
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+<script>
+$(function(){
+  $("#header").load("static/header.html");
+});
+</script>
+<script>
+function action()
+{
+}
 
-
+</script>
+<div id="header"></div>
 <div class="container">
-  <h1>LinkBudget</h1>
-
   <pouet>
   {{
       wtf.quick_form(form, form_type='horizontal', button_map={'submit_button': 'primary'})
   }}
     </pouet>
-
 <script>
   $("#ep-cb0").click(function()
     {
@@ -57,23 +72,17 @@
     Sijax.request('cpe',[$xpic,$equi,$freq,$card,$bandw]);});
 
   $("#lp-rre").focus(function() {
+        $("#lp-rre").removeAttr('readonly');
         $("#lp-xe").attr('value', '');
         $("#lp-xe").attr('readonly', 'readonly');
     });
 
-  $("#lp-rre").click(function() {
-        $("#lp-rre").removeAttr('readonly');
-    });
-
-
   $("#lp-xe").focus(function() {
+            $("#lp-xe").removeAttr('readonly');
             $("#lp-rre").removeAttr('value');
             $("#lp-rre").attr('readonly', 'readonly');
         });
 
-  $("#lp-xe").click(function() {
-        $("#lp-xe").removeAttr('readonly');
-    });
 
   $("#submit_button").mouseenter(function() {
         if (($("#lp-xe").val() == "") && ($("#lp-rre").val()) == "" )
