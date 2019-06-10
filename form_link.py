@@ -385,7 +385,7 @@ if __name__ == '__main__':
         if form.is_submitted():
             from threading import Thread
             Thread(target=bk_worker).start()
-            script = server_document('http://localhost:5006/bkapp')
+            script = server_document('http://35.226.190.198:5006/bkapp')
             return render_template('graphs.html',graph1=script)#,rrS=script,graph1=div,graph2=file_html(graph1,CDN,'plot1'),graph3=file_html(graph1,CDN,'plot1'),js_resources=js_resources,css_resources=css_resources)
             # return render_template('graphs.html', graph=html)
 
