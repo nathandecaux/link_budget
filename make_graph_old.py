@@ -84,11 +84,11 @@ class MakeGraph():
         self.graphs['rain'] = None
         self.graphs['mod'] = None
         self.graphs['avail'] = None
+        truc = Slider(title="rain", value=float(rr.value), start=0, end=110, step=10)
 
 
 
-
-    def update(self,d1a,d1b,el,geoloc,rr,tau,p0,xpic,equip,freq,card,bw,ref_mod,am):
+    def update(self,d1a,d1b,el,geoloc,rr,tau,p0,xpic,equip,freq,card,bw,ref_mod):
         self.g1a = d1a
         self.g1b = d1b
         self.el = el
@@ -102,7 +102,6 @@ class MakeGraph():
         self.card = card
         self.bw = bw
         self.ref_mod = ref_mod
-        self.am = am
 
     def getTx(self,mod):
         user = tinydb.Query()
@@ -190,63 +189,82 @@ class MakeGraph():
         table = db.table(self.equip)
         for mod in modulations:
             self.modulation_level[mod] = self.getRxThr(mod)
-    def plotRain(self,d1a,d1b,el,geoloc,rr,tau,p0,xpic,equip,freq,card,bw,ref_mod,am):
-        d = np.arange(0.01, 20, 0.01)
-        self.update(d1a,d1b,el,geoloc,rr,tau,p0,xpic,equip,freq,card,bw,ref_mod,am)
-        source1 =  dict(x=d,y=itur.models.itu530.rain_attenuation(0, 0, d, freq, el, 0.01, tau, rr))
-        return source1
-    def plotMod(self,g1a,g1b,el,geoloc,rr,tau,p0,xpic,equip,freq,card,bw,ref_mod,am):
-        d = np.arange(0.01, 20, 0.01)
-        self.update(g1a, g1b, el, geoloc, rr, tau, p0, xpic, equip, freq, card, bw, ref_mod, am)
-        p=plt.figure(title='Capacity according to the distance',x_axis_label = 'Distance (km)',y_axis_label = 'Capacity (Mbps)')
-        self.getThrList()
-        # print(str(pi)+' -- '+str(tx1)+' -- '+str(g1a)+' -- '+str(g1b)+' -- '+str(20*np.log10((4*pi*9.94*1000)/wl)))
-        rain_att = list()
-        rain_att =  (g1a + g1b - 20 * np.log10(
-            (4 * self.pi * d * 1000) / self.wl) - itur.models.itu530.rain_attenuation(geoloc[0], geoloc[1], d, freq, el, p0,
-                                                                            tau, rr).value)
-        mod_d = list()
-        levels = list(self.modulation_level.values())
-        mods_lab = list(self.modulation_level.keys())
-        tx_mod = dict()
-        capa_mod = dict()
-        for lab in mods_lab:
-            tx_mod[lab]=self.getTx(lab)
-            capa_mod[lab]=self.getCapa(lab)
-        capaline = list()
+    def mkplots(self):
+        html = ''
+        d = self.d
+        freq = self.freq
+        el = self.el
+        tau = self.tau
+        rr= self.rr
+        g1a = self.g1a
+        g1b = self.g1b
+        geoloc=self.geoloc
+        ref_mod=self.ref_mod
+        p0 = self.p0
+        if(self.rainp):
 
-        for val in rain_att:
-            max_mod = -100
-            match = False
-            capa = None
-            for lab,mod in self.modulation_level.items():
-                if val+tx_mod[lab]> mod:
-                    max_mod = mod
-                    capa = capa_mod[lab]
-                    match=True
-            capaline.append(float(capa)) if match else capaline.append(0)
-        return dict(x=d,y=capaline)
+            p = plt.figure(title='Rain-caused exceeded attenuation according to the distance',x_axis_label = 'Distance (km)',y_axis_label = 'Attenuation (dB)')
+            p.line(d, itur.models.itu530.rain_attenuation(0, 0, d, freq, el, 0.01, tau, rr), line_width=2)
+            p.add_tools(HoverTool())
 
-    def plotAvail(self,g1a,g1b,el,geoloc,rr,tau,p0,xpic,equip,freq,card,bw,ref_mod,am):
-        d = np.arange(0.01, 20, 0.01)
-        self.update(g1a, g1b, el, geoloc, rr, tau, p0, xpic, equip, freq, card, bw, ref_mod, am)
-        rx_thr = self.getRxThr(ref_mod)
-        tx1 = self.getTx(ref_mod)
-        res = list()
-        p=plt.figure(title='Availability according to the distance',x_axis_label = 'Distance (km)',y_axis_label = 'Availability')
-        for dcrt in d:
-            att_max = tx1 + g1a + g1b - float(rx_thr) - 20 * np.log10((4 * self.pi * dcrt * 1000) / self.wl)
-            val = float()
-            val = itur.models.itu530.inverse_rain_attenuation(geoloc[0], geoloc[1], dcrt, freq, el, att_max, tau,rr).value
-            val = 100 - round(val, 5)
-            res.append(val)
-        return dict(x=d,y=res)
+            self.graphs['rain']=p
 
+            html = html + file_html(p, CDN, "my plot")
 
+        if(self.modp):
+            p=plt.figure(title='Capacity according to the distance',x_axis_label = 'Distance (km)',y_axis_label = 'Capacity (Mbps)')
+            self.getThrList()
+            # print(str(pi)+' -- '+str(tx1)+' -- '+str(g1a)+' -- '+str(g1b)+' -- '+str(20*np.log10((4*pi*9.94*1000)/wl)))
+            rain_att = list()
+            rain_att =  (g1a + g1b - 20 * np.log10(
+                (4 * self.pi * d * 1000) / self.wl) - itur.models.itu530.rain_attenuation(geoloc[0], geoloc[1], d, freq, el, p0,
+                                                                                tau, rr).value)
+            mod_d = list()
+            levels = list(self.modulation_level.values())
+            mods_lab = list(self.modulation_level.keys())
+            tx_mod = dict()
+            capa_mod = dict()
+            for lab in mods_lab:
+                tx_mod[lab]=self.getTx(lab)
+                capa_mod[lab]=self.getCapa(lab)
+            capaline = list()
 
+            for val in rain_att:
+                max_mod = -100
+                match = False
+                capa = None
+                for lab,mod in self.modulation_level.items():
+                    if val+tx_mod[lab]> mod:
+                        max_mod = mod
+                        capa = capa_mod[lab]
+                        match=True
+                capaline.append(float(capa)) if match else capaline.append(0)
+            p.line(d, capaline)
+            p.add_tools(HoverTool())
+            html = html+file_html(p, CDN, "my plot")
+            self.graphs['mod'] = p
+            # plt.hlines(-100,0,20,label='Rx Sensitivity',linestyles='dotted',colors=cmap(random.randint(1,20)))
+            # plt.plot(tx2+g2a+g2b-itur.models.itu530.rain_attenuation(geoloc[0],geoloc[1], d, f2, el, 0.01,tau,rr).value-20*np.log((4*pi*d)/wl),label=str(f2)+'GHz')
+        if(self.availp):
+            rx_thr = self.getRxThr(ref_mod)
+            tx1 = self.getTx(ref_mod)
+            res = list()
+            p=plt.figure(title='Availability according to the distance',x_axis_label = 'Distance (km)',y_axis_label = 'Availability')
+            for dcrt in d:
+                att_max = tx1 + g1a + g1b - float(rx_thr) - 20 * np.log10((4 * self.pi * dcrt * 1000) / self.wl)
+                val = float()
+                val = itur.models.itu530.inverse_rain_attenuation(geoloc[0], geoloc[1], dcrt, freq, el, att_max, tau,rr).value
+                val = 100 - round(val, 5)
+                res.append(val)
+            # z = np.polyfit(d,res,10)
+            # f = np.poly1d(z)
+            # print(f(d))
+            p.line(d, res)
+            self.graphs['avail']=p
+            html = html + file_html(p, CDN, "my plot")
+        self.graphs['html']=html
 
-
-
+        return self.graphs
 
     def addline(self,d1a,d1b,el,geoloc,rr,tau,p0,xpic,equip,freq,card,bw,ref_mod,rainp,modp,availp):
         d = self.d

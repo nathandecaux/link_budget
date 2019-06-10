@@ -1,6 +1,9 @@
 from flask import Flask, render_template, flash,redirect,request,g
 from flask_bootstrap import Bootstrap
 from flask_appconfig import AppConfig
+from bokeh.server.server import Server
+from tornado.ioloop import IOLoop
+
 from flask_wtf import Form, RecaptchaField
 from wtforms import SelectField
 import flask_sijax
@@ -10,9 +13,11 @@ from wtforms import TextField, HiddenField, ValidationError, RadioField,\
     BooleanField, SubmitField, IntegerField, FormField, validators,StringField,DecimalField,SelectMultipleField
 from wtforms.validators import Required
 import bokeh.plotting as plt
-from bokeh.models import Plot,Tool,HoverTool
+from bokeh.resources import INLINE
+from bokeh.util.browser import view
+from bokeh.models import Plot,Tool,HoverTool,Slider,WidgetBox,Button,Select
 from bokeh.resources import CDN
-from bokeh.embed import file_html
+from bokeh.embed import file_html,components,server_document
 import scipy.constants
 import itur
 import numpy as np
@@ -20,14 +25,50 @@ import tinydb
 import os,sys
 import webbrowser
 import pickle
+from bokeh.io import output,curdoc
+from bokeh.layouts import row, column
+import bokeh as bk
+
+from jinja2 import Environment,Template
+
+
 import poubelle
 from make_graph import MakeGraph
 import requests
 from geolocation.main import GoogleMaps
+from flask_table import Table, Col
 
 
-graphs = list()
-graphs = [None,None,None]
+class SingleTable(Table):
+    g1a = Col('Antenna Gain A (dBm')
+    g1b = Col('Antenna Gain B (dBm')
+    el = Col('Tilt (degrees)')
+    polar = Col('Polarizaton')
+    p0 = Col('Availability ( %/year )')
+    rr = Col('Rainrate (mm/h)')
+    xpic = Col('XPIC')
+    equip = Col('Equipment')
+    freq = Col('Frequency (GHz)')
+    card = Col('Modem Card + ODU')
+    bw =Col('Bandwidth (MHz)')
+    ref_mod = Col('Reference modulation')
+    am = Col('Adaptative modulation')
+class SingleItem(object):
+    def __init__(self,d1a,d1b,el,rr,tau,p0,xpic,equip,freq,card,bw,ref_mod,am):
+        self.g1a = d1a
+        self.g1b = d1b
+        self.el = el
+        self.rr = rr
+        self.polar = tau
+        self.p0 = p0
+        self.xpic = xpic
+        self.equip = equip
+        self.freq = freq
+        self.card = card
+        self.bw = bw
+        self.ref_mod = ref_mod
+        self.am = am
+
 # with open('graph_tmp', 'rb') as graph_tmp:
 #     # Step 3
 #     graphs = pickle.load(graph_tmp)
@@ -93,14 +134,15 @@ if __name__ == '__main__':
     flask_sijax.Sijax(app)
     Bootstrap(app)
     GoogleMaps(app)
-
     app.config['SECRET_KEY'] = 'devkey'
 
+    @flask_sijax.route(app, '/')
+    def home():
+        return render_template('home.html')
 
     @flask_sijax.route(app,'/huawei')
     def huawei():
         mods_list = list()
-        #form = GlobalForm()
         form = GlobalForm()
         def cb0Ch(obj_response,xpic):
             obj_response.html('#ep-cb1','')
@@ -255,8 +297,9 @@ if __name__ == '__main__':
             return g.sijax.process_request()
 
 
-        if form.is_submitted():
-            global graphs
+
+        def bkapp(doc):
+            print(form)
             link = form.lp
             ep = form.ep
             # <--- Variables --->
@@ -264,10 +307,11 @@ if __name__ == '__main__':
             d1b = float(link.gbe.data)
             el = float(link.ele.data)
             URL = "https://nominatim.openstreetmap.org/search"
-            #rr = float(rp.rre.data)
-            geoloc = (0,0)
+            # rr = float(rp.rre.data)
+            geoloc = (0, 0)
             rr = float()
-            print("XE : "+link.xe.data)
+            js_resources = INLINE.render_js()
+            css_resources = INLINE.render_css()
             if link.xe.data != '':
                 location = str(link.xe.data)
                 # key = 'AIzaSyA3nLe6yUCTTMB82u1LTuWoyGJGvr8gBZg'
@@ -276,28 +320,73 @@ if __name__ == '__main__':
                 data = r.json()
                 latitude = float(data[0]['lat'])
                 longitude = float(data[0]['lon'])
-                geoloc = (latitude,longitude)
+                geoloc = (latitude, longitude)
                 itur.models.itu837.change_version(6)
-                rr = itur.models.itu837.rainfall_rate(latitude,longitude,0.01)
-            tau = 0 if link.polar.data=='h' else 90  # float(form.polar.data)
-            #rr = float(rp.rre.data)
-            p0 = 100-float(link.p_entry.data)
+                rr = itur.models.itu837.rainfall_rate(latitude, longitude, 0.01).value
+            tau = 0 if link.polar.data == 'h' else 90  # float(form.polar.data)
+            # rr = float(rp.rre.data)
+            p0 = 100 - float(link.p_entry.data)
             xpic = ep.cb0.data
             equip = ep.cb1.data
             freq = float(ep.fe.data)
             card = ep.carde.data
             bw = ep.cpe.data
             ref_mod = ep.ref_mod.data
-            g1a=poubelle.getAntGain(d1a,freq)
-            g1b=poubelle.getAntGain(d1b,freq)
+            g1a = poubelle.getAntGain(d1a, freq)
+            g1b = poubelle.getAntGain(d1b, freq)
             am = ep.am.data
-            #def __init(self,d1a,d1b,el,geoloc,rr,tau,p0,xpic,equip,freq,card,bw,ref_mod,rainp,modp,availp):
-            checks = [form.mf.rainp.data,form.mf.modp.data,form.mf.availp.data]
-            graph = MakeGraph(g1a,g1b,el,geoloc,rr,tau,p0,xpic,equip,freq,card,bw,ref_mod,checks[0],checks[1],checks[2])
-            html = graph.mkplots()
-            f = open("templates/graphs.html", "w")
-            f.write(html)
-            return render_template('graphs.html', graph=html)
+            items = SingleItem(d1a, d1b, el, rr, tau, p0, xpic, equip, freq, card, bw, ref_mod, am)
+            table = SingleTable([items], classes=['table table-striped'])
+            checks = [form.mf.rainp.data, form.mf.modp.data, form.mf.availp.data]
+            graph = MakeGraph(g1a, g1b, el, geoloc, rr, tau, p0, xpic, equip, freq, card, bw, ref_mod, am, checks[0],
+                              checks[1], checks[2])
+            if(checks[0]):
+                rrS = Slider(title="rain", value=float(rr), start=0, end=110, step=10)
+                freqS = Slider(title="freq", value=float(freq), start=6, end=80, step=1)
+                refresh_button = Button(label='Refresh')
+                source1 = plt.ColumnDataSource(
+                    data=graph.plotRain(g1a, g1b, el, geoloc, rr, tau, p0, xpic, equip, freq, card, bw, ref_mod, am))
+                graph1 = plt.figure(title='Rain-caused exceeded attenuation according to the distance',
+                                    x_axis_label='Distance (km)', y_axis_label='Attenuation (dB)')
+                graph1.line('x', 'y', source=source1)
+                def update_data(event):
+                    source1.data = plt.ColumnDataSource(
+                        data=graph.plotRain(g1a, g1b, el, geoloc, rrS.value, tau, p0, xpic, equip, freqS.value, card, bw, ref_mod,
+                                            am)).data
+                graph1.add_tools(HoverTool())
+                refresh_button.on_click(handler=update_data)
+                doc.add_root(row(graph1,column(rrS,freqS,refresh_button)))
+            if(checks[1]):
+                g1aS = Select(title="Antenna Diameter A (m)",value=str(d1a),options=link.gae.choices)
+                rrS2 = Slider(title="Rainrate (mm/h)", value=float(rr), start=0, end=110, step=10)
+                refresh_button2 = Button(label='Refresh')
+                source2 = plt.ColumnDataSource(
+                    data=graph.plotMod(g1a, g1b, el, geoloc, rr, tau, p0, xpic, equip, freq, card, bw, ref_mod, am))
+                graph2 = plt.figure(title='Capacity according to the distance',
+                                    x_axis_label='Distance (km)', y_axis_label='Capacity (Mbps)')
+                graph2.line('x', 'y', source=source2)
+                def update_data2(event):
+                    curr_dat = graph.plotMod(float(poubelle.getAntGain(float(g1aS.value.__str__()), freq)), g1b, el, geoloc,
+                                  rrS2.value, tau, p0, xpic, equip, freq, card, bw, ref_mod, am)
+                    graph2.line(curr_dat['x'],curr_dat['y'])
+
+                graph2.add_tools(HoverTool())
+                graph2.css_classes = ["graph2"]
+                refresh_button2.on_click(handler=update_data2)
+                doc.add_root(row(graph2, column(g1aS,rrS2, refresh_button2)))
+
+        def bk_worker():
+            # Can't pass num_procs > 1 in this configuration. If you need to run multiple
+            # processes, see e.g. flask_gunicorn_embed.py
+            server = Server({'/bkapp': bkapp}, io_loop=IOLoop(), allow_websocket_origin=["localhost"])
+            server.start()
+            server.io_loop.start()
+
+        if form.is_submitted():
+            from threading import Thread
+            Thread(target=bk_worker).start()
+            script = server_document('http://localhost:5006/bkapp')
+            return render_template('graphs.html',graph1=script)#,rrS=script,graph1=div,graph2=file_html(graph1,CDN,'plot1'),graph3=file_html(graph1,CDN,'plot1'),js_resources=js_resources,css_resources=css_resources)
             # return render_template('graphs.html', graph=html)
 
         return render_template('index.html', form=form)
@@ -333,5 +422,7 @@ if __name__ == '__main__':
             return render_template('tables.html',table=eb_stab,ex_tab=ex_tab,e_mw_tab=e_mw_tab,mw_stab=mw_stab,mw_xtab=mw_xtab)
 
         return render_template('index.html',form=form)
+
+
 
     app.run(host='0.0.0.0',port=80,debug=True)
