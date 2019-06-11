@@ -3,7 +3,8 @@ from flask_bootstrap import Bootstrap
 from flask_appconfig import AppConfig
 from bokeh.server.server import Server
 from tornado.ioloop import IOLoop
-
+import bokeh.palettes as bkolor
+import itertools
 from flask_wtf import Form, RecaptchaField
 from wtforms import SelectField
 import flask_sijax
@@ -15,7 +16,7 @@ from wtforms.validators import Required
 import bokeh.plotting as plt
 from bokeh.resources import INLINE
 from bokeh.util.browser import view
-from bokeh.models import Plot,Tool,HoverTool,Slider,WidgetBox,Button,Select
+from bokeh.models import Plot,Tool,HoverTool,Slider,WidgetBox,Button,Select,TextInput,Spinner
 from bokeh.resources import CDN
 from bokeh.embed import file_html,components,server_document
 import scipy.constants
@@ -145,8 +146,9 @@ if __name__ == '__main__':
         mods_list = list()
         form = GlobalForm()
         def cb0Ch(obj_response,xpic):
-            obj_response.html('#ep-cb1','')
-            obj_response.html_append('#ep-cb1', '<option>----</option>')
+            if obj_response!=None:
+                obj_response.html('#ep-cb1','')
+                obj_response.html_append('#ep-cb1', '<option>----</option>')
             if xpic == '1':
                 db = tinydb.TinyDB('db_huawei_XPIC.json')
 
@@ -155,17 +157,21 @@ if __name__ == '__main__':
             i=0
             choix = list()
             for val in db.tables():
-                obj_response.html_append('#ep-cb1', '<option id='+str(i)+' value='+str(val)+' >'+val+'</option>')
-                choix.append((str(val),str(val)))
-                i=i+1
+                if val != '_default':
+                    if obj_response != None:
+                        obj_response.html_append('#ep-cb1', '<option id='+str(i)+' value='+str(val)+' >'+val+'</option>')
+                    choix.append((str(val)))
+                    i=i+1
             form.ep.cb1.choices = choix
             choices_po['cb1']=choix
+            return choix
 
 
 
         def equiCh(obj_response,xpic,equi):
-            obj_response.html('#ep-fe','')
-            obj_response.html_append('#ep-fe', '<option>----</option>')
+            if obj_response != None:
+                obj_response.html('#ep-fe','')
+                obj_response.html_append('#ep-fe', '<option>----</option>')
             if xpic == '1':
                 db = tinydb.TinyDB('db_huawei_XPIC.json')
 
@@ -181,16 +187,19 @@ if __name__ == '__main__':
                     freqs.append(freq)
             for val in freqs:
                 val = str(val)
-                choix.append((str(val), str(val)))
-                obj_response.html_append('#ep-fe', '<option id='+str(i)+' value='+val+' >'+val+'</option>')
+                choix.append(str(val))
+                if obj_response != None:
+                    obj_response.html_append('#ep-fe', '<option id='+str(i)+' value='+val+' >'+val+'</option>')
                 i=i+1
+            return choix
 
 
 
 
         def freqCh(obj_response,xpic,equi,freq):
-            obj_response.html('#ep-carde','')
-            obj_response.html_append('#ep-carde', '<option>----</option>')
+            if obj_response != None:
+                obj_response.html('#ep-carde','')
+                obj_response.html_append('#ep-carde', '<option>----</option>')
             if xpic == '1':
                 db = tinydb.TinyDB('db_huawei_XPIC.json')
 
@@ -213,15 +222,18 @@ if __name__ == '__main__':
                     i=i+1
                     mod_card=str(mod_card)
                     mod_cards.append(mod_card)
-                    choix.append((str(mod_card), str(mod_card)))
-                    obj_response.html_append('#ep-carde', '<option id=' + str(i) + ' value=' + mod_card + ' >' + mod_card + '</option>')
+                    choix.append(str(mod_card))
+                    if obj_response != None:
+                        obj_response.html_append('#ep-carde', '<option id=' + str(i) + ' value=' + mod_card + ' >' + mod_card + '</option>')
+            return mod_cards
 
 
 
 
         def cardCh(obj_response,xpic,equi,freq,carde):
-            obj_response.html('#ep-cpe','')
-            obj_response.html_append('#ep-cpe', '<option>----</option>')
+            if obj_response != None:
+                obj_response.html('#ep-cpe','')
+                obj_response.html_append('#ep-cpe', '<option>----</option>')
             if xpic == '1':
                 db = tinydb.TinyDB('db_huawei_XPIC.json')
 
@@ -235,13 +247,16 @@ if __name__ == '__main__':
             for row in table:
                 freq0 = str(row['BAND_DESIGNATOR'])
                 bandwidth = str(row['BANDWIDTH'])
+
                 if (re.search('(' + match_str + ')', str(row['MODEL'])) != None) and str(freq0) == str(
                         freq) and bandwidth not in bandwidths:
                     i=i+1
                     bandwidths.append(bandwidth)
-                    choix.append((str(bandwidth), str(bandwidth)))
-                    obj_response.html_append('#ep-cpe', '<option id=' + str(i) + ' value=' + bandwidth + ' >' + bandwidth + '</option>')
+                    choix.append(str(bandwidth))
+                    if obj_response != None:
+                        obj_response.html_append('#ep-cpe', '<option id=' + str(i) + ' value=' + bandwidth + ' >' + bandwidth + '</option>')
             form.ep.cpe.choices = choix
+            return choix
 
         def sortMod(mod):
             if (re.match('BPSK', str(mod))):
@@ -299,7 +314,6 @@ if __name__ == '__main__':
 
 
         def bkapp(doc):
-            print(form)
             link = form.lp
             ep = form.ep
             # <--- Variables --->
@@ -307,9 +321,8 @@ if __name__ == '__main__':
             d1b = float(link.gbe.data)
             el = float(link.ele.data)
             URL = "https://nominatim.openstreetmap.org/search"
-            # rr = float(rp.rre.data)
             geoloc = (0, 0)
-            rr = float()
+
             js_resources = INLINE.render_js()
             css_resources = INLINE.render_css()
             if link.xe.data != '':
@@ -323,7 +336,9 @@ if __name__ == '__main__':
                 geoloc = (latitude, longitude)
                 itur.models.itu837.change_version(6)
                 rr = itur.models.itu837.rainfall_rate(latitude, longitude, 0.01).value
-            tau = 0 if link.polar.data == 'h' else 90  # float(form.polar.data)
+            else:
+                rr = float(link.rre.data)
+            tau = float(link.polar.data) # float(form.polar.data)
             # rr = float(rp.rre.data)
             p0 = 100 - float(link.p_entry.data)
             xpic = ep.cb0.data
@@ -357,35 +372,247 @@ if __name__ == '__main__':
                 refresh_button.on_click(handler=update_data)
                 doc.add_root(row(graph1,column(rrS,freqS,refresh_button)))
             if(checks[1]):
+                widgets = list()
+                widgets2 = list()
+                buttons = list()
                 g1aS = Select(title="Antenna Diameter A (m)",value=str(d1a),options=link.gae.choices)
-                rrS2 = Slider(title="Rainrate (mm/h)", value=float(rr), start=0, end=110, step=10)
+                g1bS = Select(title="Antenna Diameter B (m)",value=str(d1b),options=link.gae.choices)
+                polarS = Select(title="Polarization",value=str(link.polar.data),options=link.polar.choices)
+                #elS2 = Slider(title="Elevation (degrees)", value=float(el), start=0, end=45, step=10)
+                rrS2 = Slider(title="Rainrate (mm/h)", value=float(rr), start=0, end=110, step=1)
+                pS = TextInput(title="Availability",value=str(link.p_entry.data))#Spinner(title="Availability", value=float(link.p_entry.data), low=99, high=100,step=0.001)
+                add_button2 = Button(label='Add Line')
                 refresh_button2 = Button(label='Refresh')
+                widgets.append(g1aS)
+                widgets.append(g1bS)
+                widgets.append(polarS)
+                widgets.append(rrS2)
+                widgets.append(pS)
+                buttons.append(refresh_button2)
+                xpicS = Select(title="XPIC",value=str(xpic),options=ep.cb0.choices)
+                equipS = Select(title="Equipment",value=str(equip),options=cb0Ch(None,xpic))
+                freqS = Select(title="Frequency (GHz)",value=str(freq),options=equiCh(None,xpic,equip))
+                cardS = Select(title="Modem + ODU",value=str(card),options=freqCh(None,xpic,equip,freq))
+                bwS = Select(title="Bandwidth (MHz)", value=str(bw), options=cardCh(None,xpic,equip,freq,card))
+                amS = Select(title="Adaptative Modulation", value=str(am), options=ep.am.choices)
+
+                widgets2.append(xpicS)
+                widgets2.append(equipS)
+                widgets2.append(freqS)
+                widgets2.append(cardS)
+                widgets2.append(bwS)
+                widgets2.append(amS)
+                buttons.append(add_button2)
+
+                colors = itertools.cycle(bkolor.Category10_10)
                 source2 = plt.ColumnDataSource(
                     data=graph.plotMod(g1a, g1b, el, geoloc, rr, tau, p0, xpic, equip, freq, card, bw, ref_mod, am))
                 graph2 = plt.figure(title='Capacity according to the distance',
                                     x_axis_label='Distance (km)', y_axis_label='Capacity (Mbps)')
-                graph2.line('x', 'y', source=source2)
+                graph2.line('x', 'y', source=source2,color=next(colors))
                 def update_data2(event):
-                    curr_dat = graph.plotMod(float(poubelle.getAntGain(float(g1aS.value.__str__()), freq)), g1b, el, geoloc,
-                                  rrS2.value, tau, p0, xpic, equip, freq, card, bw, ref_mod, am)
-                    graph2.line(curr_dat['x'],curr_dat['y'])
+
+                    p0 = np.round(100.0 - float(pS.value),5)
+                    g1a = float(poubelle.getAntGain(float(g1aS.value.__str__()), freq))
+                    g1b = float(poubelle.getAntGain(float(g1bS.value.__str__()), freq))
+                    # truc = [g1a,g1b,p0,rrS2.value,float(polarS.value),xpicS.value, equipS.value, float(freqS.value), cardS.value, float(bwS.value), ref_mod, amS.value]
+                    # print(truc)
+                    #plotMod(self,g1a,g1b,el,geoloc,rr,tau,p0,xpic,equip,freq,card,bw,ref_mod,am)
+                    print(cardS.value)
+                    source2.data = plt.ColumnDataSource(
+                        data=graph.plotMod(g1a,g1b, el, geoloc,
+                                  rrS2.value,float(polarS.value), p0,xpicS.value, equipS.value, float(freqS.value), cardS.value, float(bwS.value), ref_mod, amS.value)).data
+
+
+                def add_data2(event):
+                    p0 = 100.0 - float(pS.value)
+                    g1a = float(poubelle.getAntGain(float(g1aS.value.__str__()), freq))
+                    g1b =float(poubelle.getAntGain(float(g1bS.value.__str__()), freq))
+                    curr_dat = graph.plotMod(g1a,g1b, el, geoloc,
+                                  rrS2.value,float(polarS.value), p0, xpicS.value, equipS.value, float(freqS.value), cardS.value, float(bwS.value), ref_mod, amS.value)
+                    graph2.line(curr_dat['x'],curr_dat['y'], color = next(colors))
+                    graph2.add_tools(HoverTool())
+
+                def xpicUp(attr,old,new):
+                    equipS.options = list(cb0Ch(None,xpicS.value))
+
+                def equipUp(attr,old,new):
+                    if new != []:
+                        if isinstance(new,list):
+                            new = new[0]
+                        equipS.value = new
+                        freqS.options= list(equiCh(None,xpicS.value,new))
+
+                def freqUp(attr,old,new):
+                    if new != []:
+                        if isinstance(new,list):
+                            new=new[0]
+                        freqS.value = new
+                        cardS.options= list(freqCh(None,xpicS.value,equipS.value,new))
+                        # bwS.options= list(cardCh(None,xpicS.value,equipS.value,freqS.value,cardS.value))
+
+                def cardUp(attr,old,new):
+                    if new != []:
+                        if isinstance(new,list):
+                            new=new[0]
+                        cardS.value = new
+                        bwS.options= list(cardCh(None,xpicS.value,equipS.value,freqS.value,new))
+                def bwUp(attr,old,new):
+                    if new != []:
+                        if isinstance(new,list):
+                            new=new[0]
+                        bwS.value = new
+
+
 
                 graph2.add_tools(HoverTool())
-                graph2.css_classes = ["graph2"]
+                graph2.css_classes = ["container"]
                 refresh_button2.on_click(handler=update_data2)
-                doc.add_root(row(graph2, column(g1aS,rrS2, refresh_button2)))
+                add_button2.on_click(handler=add_data2)
+                xpicS.on_change('value',xpicUp)
+                equipS.on_change('value',equipUp)
+                equipS.on_change('options', equipUp)
+                freqS.on_change('value',freqUp)
+                freqS.on_change('options',freqUp)
+                cardS.on_change('value',cardUp)
+                cardS.on_change('options', cardUp)
+                bwS.on_change('options',bwUp)
+                bwS.on_change('value',bwUp)
 
+                doc.add_root(row(graph2, column(row(column(widgets),column(widgets2)),row(buttons))))
+            if (checks[2]):
+                widgets = list()
+                widgets2 = list()
+                buttons = list()
+                g1aS3 = Select(title="Antenna Diameter A (m)", value=str(d1a), options=link.gae.choices)
+                g1bS3 = Select(title="Antenna Diameter B (m)", value=str(d1b), options=link.gae.choices)
+                polarS3 = Select(title="Polarization", value=str(link.polar.data), options=link.polar.choices)
+                # elS2 = Slider(title="Elevation (degrees)", value=float(el), start=0, end=45, step=10)
+                rrS3 = Slider(title="Rainrate (mm/h)", value=float(rr), start=0, end=110, step=1)
+                pS3 = TextInput(title="Availability", value=str(
+                    link.p_entry.data))  # Spinner(title="Availability", value=float(link.p_entry.data), low=99, high=100,step=0.001)
+                add_button3 = Button(label='Add Line')
+                refresh_button3 = Button(label='Refresh')
+                widgets.append(g1aS3)
+                widgets.append(g1bS3)
+                widgets.append(polarS3)
+                widgets.append(rrS3)
+                widgets.append(pS3)
+                buttons.append(refresh_button3)
+                xpicS3 = Select(title="XPIC", value=str(xpic), options=ep.cb0.choices)
+                equipS3 = Select(title="Equipment", value=str(equip), options=cb0Ch(None, xpic))
+                freqS3 = Select(title="Frequency (GHz)", value=str(freq), options=equiCh(None, xpic, equip))
+                cardS3 = Select(title="Modem + ODU", value=str(card), options=freqCh(None, xpic, equip, freq))
+                bwS3 = Select(title="Bandwidth (MHz)", value=str(bw), options=cardCh(None, xpic, equip, freq, card))
+                refS3 = Select(title="Reference Modulation", value=str(ref_mod), options=bandwCh(None, xpic, equip, freq, card,bw))
+                amS3 = Select(title="Adaptative Modulation", value=str(am), options=ep.am.choices)
+
+                widgets2.append(xpicS3)
+                widgets2.append(equipS3)
+                widgets2.append(freqS3)
+                widgets2.append(cardS3)
+                widgets2.append(bwS3)
+                widgets.append(amS3)
+                widgets2.append(refS3)
+                buttons.append(add_button3)
+
+                colors3 = itertools.cycle(bkolor.Category10_10)
+                source3 = plt.ColumnDataSource(
+                    data=graph.plotAvail(g1a, g1b, el, geoloc, rr, tau, p0, xpic, equip, freq, card, bw, ref_mod, am))
+                graph3 = plt.figure(title='Capacity according to the distance',
+                                    x_axis_label='Distance (km)', y_axis_label='Capacity (Mbps)')
+                graph3.line('x', 'y', source=source3, color=next(colors3))
+                # graph3.plot_width = 1000
+                # graph3.plot_height = 800
+                def update_data3(event):
+
+                    p0 = np.round(100.0 - float(pS3.value), 5)
+                    g1a = float(poubelle.getAntGain(float(g1aS3.value.__str__()), freq))
+                    g1b = float(poubelle.getAntGain(float(g1bS3.value.__str__()), freq))
+                    # truc = [g1a,g1b,p0,rrS2.value,float(polarS.value),xpicS.value, equipS.value, float(freqS.value), cardS.value, float(bwS.value), ref_mod, amS.value]
+                    # print(truc)
+                    # plotAvail(self,g1a,g1b,el,geoloc,rr,tau,p0,xpic,equip,freq,card,bw,ref_mod,am)
+
+                    source3.data = plt.ColumnDataSource(
+                        data=graph.plotAvail(g1a, g1b, el, geoloc,
+                                           rrS3.value, float(polarS3.value), p0, xpicS3.value, equipS3.value,
+                                           float(freqS3.value), cardS3.value, float(bwS3.value), refS3.value, amS3.value)).data
+
+                def add_data3(event):
+                    p0 = 100.0 - float(pS3.value)
+                    g1a = float(poubelle.getAntGain(float(g1aS3.value.__str__()), freq))
+                    g1b = float(poubelle.getAntGain(float(g1bS3.value.__str__()), freq))
+                    curr_dat = graph.plotAvail(g1a, g1b, el, geoloc,
+                                             rrS3.value, float(polarS3.value), p0, xpicS3.value, equipS3.value,
+                                             float(freqS3.value), cardS3.value, float(bwS3.value), refS3.value, amS3.value)
+                    graph3.line(curr_dat['x'], curr_dat['y'], color=next(colors3))
+                    graph3.add_tools(HoverTool())
+
+                def xpicUp3(attr, old, new):
+                    equipS3.options = list(cb0Ch(None, xpicS3.value))
+
+                def equipUp3(attr, old, new):
+                    if new != []:
+                        if isinstance(new, list):
+                            new = new[0]
+                        equipS3.value = new
+                        freqS3.options = list(equiCh(None, xpicS3.value, new))
+
+                def freqUp3(attr, old, new):
+                    if new != []:
+                        if isinstance(new, list):
+                            new = new[0]
+                        freqS3.value = new
+                        cardS3.options = list(freqCh(None, xpicS3.value, equipS3.value, new))
+                        # bwS.options= list(cardCh(None,xpicS.value,equipS.value,freqS.value,cardS.value))
+
+                def cardUp3(attr, old, new):
+                    if new != []:
+                        if isinstance(new, list):
+                            new = new[0]
+                        cardS3.value = new
+                        bwS3.options = list(cardCh(None, xpicS3.value, equipS3.value, freqS3.value, new))
+
+                def bwUp3(attr, old, new):
+                    if new != []:
+                        if isinstance(new, list):
+                            new = new[0]
+                        bwS3.value = new
+                        refS3.options = list(bandwCh(None, xpicS3.value, equipS3.value, freqS3.value,cardS3.value,new))
+
+                def refUp3(attr,old,new):
+                    if new != []:
+                        if isinstance(new, list):
+                            new = new[0]
+                        refS3.value = new
+
+                graph3.add_tools(HoverTool())
+                graph3.css_classes = ["container"]
+                refresh_button3.on_click(handler=update_data3)
+                add_button3.on_click(handler=add_data3)
+                xpicS3.on_change('value', xpicUp3)
+                equipS3.on_change('value', equipUp3)
+                equipS3.on_change('options', equipUp3)
+                freqS3.on_change('value', freqUp3)
+                freqS3.on_change('options', freqUp3)
+                cardS3.on_change('value', cardUp3)
+                cardS3.on_change('options', cardUp3)
+                bwS3.on_change('options', bwUp3)
+                bwS3.on_change('value', bwUp3)
+                refS3.on_change('options', refUp3)
+                refS3.on_change('value', refUp3)
+                doc.add_root(row(graph3, column(row(column(widgets),column(widgets2)),row(buttons))))
         def bk_worker():
             # Can't pass num_procs > 1 in this configuration. If you need to run multiple
             # processes, see e.g. flask_gunicorn_embed.py
-            server = Server({'/bkapp': bkapp}, io_loop=IOLoop(), allow_websocket_origin=["localhost"])
+            server = Server({'/bkapp': bkapp},port=443,io_loop=IOLoop(), allow_websocket_origin=["localhost"])
             server.start()
             server.io_loop.start()
 
         if form.is_submitted():
             from threading import Thread
             Thread(target=bk_worker).start()
-            script = server_document('http://35.226.190.198:5006/bkapp')
+            script = server_document('http://localhost:443/bkapp')
             return render_template('graphs.html',graph1=script)#,rrS=script,graph1=div,graph2=file_html(graph1,CDN,'plot1'),graph3=file_html(graph1,CDN,'plot1'),js_resources=js_resources,css_resources=css_resources)
             # return render_template('graphs.html', graph=html)
 

@@ -41,69 +41,15 @@ $(function(){
 
 <div id="header"></div>
 
-
-<div class="accordion" id="accordionExample">
-        <div class="card">
-            <div class="card-header" id="heading1">
-              <h5 class="mb-0">
-                <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapse1" aria-expanded="true" aria-controls="collapse1">
-                  Rain Attenuation
-                </button>
-              </h5>
-            </div>
-            <div id="collapse1" class="collapse show" aria-labelledby="heading1" data-parent="#accordionExample">
-                <div class="card-body">
-                  {{
-                    graph1|safe
-                  }}
-
-                    {{rrS|safe}}
-
-                    {{table|safe}}
-                </div>
-            </div>
-        </div>
+<body>
+<div class="bk">
+    <div class="container-fluid">
+                      {{
+                        graph1|safe
+                      }}
+    </div>
 </div>
-
-
-     <div class="card">
-            <div class="card-header" id="heading2">
-              <h5 class="mb-0">
-                <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapse2" aria-expanded="true" aria-controls="collapse2">
-                  Capacity / Distance
-                </button>
-              </h5>
-            </div>
-
-            <div id="collapse2" class="collapse show" aria-labelledby="heading2" data-parent="#accordionExample">
-                <div class="card-body">
-                  {{
-                    graph2|safe
-                  }}
-                    {{table|safe}}
-                </div>
-            </div>
-        </div>
-
-         <div class="card">
-            <div class="card-header" id="heading3">
-              <h5 class="mb-0">
-                <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapse3" aria-expanded="true" aria-controls="collapse3">
-                  Availability / Distance
-                </button>
-              </h5>
-            </div>
-
-            <div id="collapse3" class="collapse show" aria-labelledby="heading3" data-parent="#accordionExample">
-                <div class="card-body">
-                  {{
-                   graph3|safe
-                  }}
-                    {{table|safe}}
-                </div>
-            </div>
-        </div>
-
+</body>
 
 
 

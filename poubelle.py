@@ -80,6 +80,7 @@ def getAntGain(dia,freq):
 def getProfilperCapa(capa=0,xpic=False,eband=False,multiB=False):
     profils = list()
     user = tinydb.Query()
+    db = ''
     if multiB:
         if xpic: db = tinydb.TinyDB('db_huawei_XPIC.json')
         else : db = tinydb.TinyDB('db_huawei.json')
