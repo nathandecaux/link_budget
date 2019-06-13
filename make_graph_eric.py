@@ -28,7 +28,7 @@ from geolocation.main import GoogleMaps
 
 
 
-class MakeGraph():
+class MakeGraphE():
     #<--- Variables --->
     el = float()
     URL = "https://nominatim.openstreetmap.org/search"
@@ -47,7 +47,6 @@ class MakeGraph():
     ref_mod = str()
     g1a=float()
     g1b=float()
-    am = str()
     #<--- Constants --->
     pi = float()
     wl = float()
@@ -61,7 +60,7 @@ class MakeGraph():
     graphs = dict()
     table = str()
     db = ''
-    def __init__(self,d1a,d1b,el,geoloc,rr,tau,p0,xpic,equip,freq,card,bw,ref_mod,am,rainp,modp,availp):
+    def __init__(self,d1a,d1b,el,geoloc,rr,tau,p0,xpic,equip,freq,card,bw,ref_mod,rainp,modp,availp):
         self.g1a = d1a
         self.g1b = d1b
         self.el = el
@@ -75,7 +74,6 @@ class MakeGraph():
         self.card=card
         self.bw = bw
         self.ref_mod = ref_mod
-        self.am = am
         self.rainp=rainp
         self.modp = modp
         self.availp=availp
@@ -84,11 +82,11 @@ class MakeGraph():
         self.graphs['rain'] = None
         self.graphs['mod'] = None
         self.graphs['avail'] = None
-        self.db = tinydb.TinyDB('db_huawei_XPIC.json') if xpic == '1' else tinydb.TinyDB('db_huawei.json')
+        self.db = tinydb.TinyDB('db_ericsson_AM.json') if xpic == '1' else tinydb.TinyDB('db_ericsson.json')
 
 
 
-    def update(self,d1a,d1b,el,geoloc,rr,tau,p0,xpic,equip,freq,card,bw,ref_mod,am):
+    def update(self,d1a,d1b,el,geoloc,rr,tau,p0,xpic,equip,freq,card,bw,ref_mod):
         self.g1a = d1a
         self.g1b = d1b
         self.el = el
@@ -102,9 +100,8 @@ class MakeGraph():
         self.card = card
         self.bw = bw
         self.ref_mod = ref_mod
-        self.am = am
         self.modulation_level.clear()
-        self.db = tinydb.TinyDB('db_huawei_XPIC.json') if xpic == '1' else tinydb.TinyDB('db_huawei.json')
+        self.db = tinydb.TinyDB('db_ericsson_AM.json') if xpic == '1' else tinydb.TinyDB('db_ericsson.json')
 
 
     def getTx(self,mod):
@@ -131,10 +128,8 @@ class MakeGraph():
         table = self.db.table(self.equip)
         row = table.search((user.MODEL.search('(' + self.card + ')')) & (user.BAND_DESIGNATOR == float(self.freq)) & (
                     user.BANDWIDTH == float(self.bw)) & (user.MODULATION_TYPE == str(mod)))
-        if (self.am == '1'):
-            return row[0]['TYP_RX_THRESHOLD3'] + row[0]['ACM_DROP_OFFSET']
-        else:
-            return row[0]['TYP_RX_THRESHOLD3']
+
+        return row[0]['TYP_RX_THRESHOLD3']
 
 
 
@@ -148,10 +143,6 @@ class MakeGraph():
         def sortMod(mod):
             if (re.match('BPSK', str(mod))):
                 mod = '2QAM'
-            if (re.match('QPSK', str(mod))):
-                mod = '4QAM'
-            if (re.match('8PSK', str(mod))):
-                mod = '8QAM'
             return int(str(mod).split('QAM')[0])
 
         for row in table:
@@ -161,6 +152,7 @@ class MakeGraph():
             if (re.search('(' + match_str + ')', str(row['MODEL'])) != None) and str(freq0) == str(freq) and str(
                     bandwidth) == str(bandw) and modulation not in modulations:
                 modulations.append(modulation)
+        modulations.sort(reverse=True)
         modulations.sort(key=sortMod)
         return modulations
 
@@ -169,16 +161,16 @@ class MakeGraph():
         table = self.db.table(self.equip)
         for mod in modulations:
             self.modulation_level[mod] = self.getRxThr(mod)
-    def plotRain(self,d1a,d1b,el,geoloc,rr,tau,p0,xpic,equip,freq,card,bw,ref_mod,am):
+    def plotRain(self,d1a,d1b,el,geoloc,rr,tau,p0,xpic,equip,freq,card,bw,ref_mod):
         d = np.arange(0.01, 20, 0.01)
-        self.update(d1a,d1b,el,geoloc,rr,tau,p0,xpic,equip,freq,card,bw,ref_mod,am)
+        self.update(d1a,d1b,el,geoloc,rr,tau,p0,xpic,equip,freq,card,bw,ref_mod)
         source1 =  dict(x=d,y=itur.models.itu530.rain_attenuation(0, 0, d, freq, el, 0.01, tau, rr))
         return source1
-    def plotMod(self,g1a,g1b,el,geoloc,rr,tau,p0,xpic,equip,freq,card,bw,ref_mod,am):
+    def plotMod(self,g1a,g1b,el,geoloc,rr,tau,p0,xpic,equip,freq,card,bw,ref_mod):
         d = np.arange(0.01, 20, 0.01)
-        self.update(g1a, g1b, el, geoloc, rr, tau, p0, xpic, equip, freq, card, bw, ref_mod, am)
+        self.update(g1a, g1b, el, geoloc, rr, tau, p0, xpic, equip, freq, card, bw, ref_mod)
         infosl = {'gainA':g1a,'gainB':g1b,'rain':np.round(rr,1),'polar':tau,'avail':np.round(100-p0,5)}
-        infose = {'xpic':xpic,'equip':equip,'freq':freq,'card':card,'bw':bw,'ref_mod':ref_mod,'am':am}
+        infose = {'xpic':xpic,'equip':equip,'freq':freq,'card':card,'bw':bw,'ref_mod':ref_mod}
 
         p=plt.figure(title='Capacity according to the distance',x_axis_label = 'Distance (km)',y_axis_label = 'Capacity (Mbps)')
 
@@ -210,12 +202,11 @@ class MakeGraph():
                     capa = capa_mod[lab]
                     match=True
             capaline.append(float(capa)) if match else capaline.append(0)
-
         return dict(x=d,y=capaline,infl=np.full(1999,infosl.__str__()),infe=np.full(1999,infose.__str__()))
 
-    def plotAvail(self,g1a,g1b,el,geoloc,rr,tau,p0,xpic,equip,freq,card,bw,ref_mod,am):
+    def plotAvail(self,g1a,g1b,el,geoloc,rr,tau,p0,xpic,equip,freq,card,bw,ref_mod):
         d = np.arange(0.01, 20, 0.01)
-        self.update(g1a, g1b, el, geoloc, rr, tau, p0, xpic, equip, freq, card, bw, ref_mod, am)
+        self.update(g1a, g1b, el, geoloc, rr, tau, p0, xpic, equip, freq, card, bw, ref_mod)
         rx_thr = self.getRxThr(ref_mod)
         tx1 = self.getTx(ref_mod)
         res = list()
@@ -224,7 +215,7 @@ class MakeGraph():
             att_max = tx1 + g1a + g1b - float(rx_thr) - 20 * np.log10((4 * self.pi * dcrt * 1000) / self.wl)
             val = float()
             val = itur.models.itu530.inverse_rain_attenuation(geoloc[0], geoloc[1], dcrt, freq, el, att_max, tau,rr).value
-            val = 100 - round(val, 9)
+            val = 100 - round(val, 5)
             res.append(val)
         return dict(x=d,y=res,freq=np.full(1999,freq))
 

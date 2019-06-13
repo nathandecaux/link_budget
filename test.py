@@ -210,9 +210,10 @@ def home():
         mod_cards = list()
         for row in table:
             freq = row['BAND_DESIGNATOR']
-            if str(row['MODEL']).split('/').__len__()>3:
+            if str(row['MODEL']).split('/').__len__()>2:
                 mod_card = str(row['MODEL']).split('/')[1]
             else:
+
                 mod_card = str(int(freq))+'ASA'
             if str(freq) == str(fe.get()) and mod_card not in mod_cards:
                 mod_cards.append(mod_card)
@@ -639,9 +640,3 @@ if __name__ == "__main__":    app.run(debug=True)
 
 
 
-API KEY
-
-AIzaSyA3nLe6yUCTTMB82u1LTuWoyGJGvr8gBZg
-
-<script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA3nLe6yUCTTMB82u1LTuWoyGJGvr8gBZg&callback=initMap"
-  type="text/javascript"></script>

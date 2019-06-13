@@ -33,11 +33,22 @@
 <script>
 $(function(){
   $("#header").load("static/header.html");
+
 });
+
+
+
+</script>
+<script type="text/javascript">
+	function move() {
+		var content = document.getElementsByClassName('bk truc')[0];
+		document.getElementById("pouet").innerHTML = content;
+	}
 </script>
 {{ js_resources|safe}}
 {{ css_resources|safe}}
 <body>
+<head>  <title>Graphs</title></head>
 
 <div id="header"></div>
 
@@ -46,12 +57,18 @@ $(function(){
     <div class="container-fluid">
                       {{
                         graph1|safe
-                      }}
+                       }}
+                    {{
+                        truc|safe
+                    }}
+
     </div>
+    <div id="pouet"></div>
 </div>
 </body>
 
 
+<input type="submit" onclick="move();" value="Move">
 
 
 {% endblock %}
