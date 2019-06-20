@@ -74,14 +74,16 @@ class DualTable(Table):
 
 
 class SingleItem(object):
-    def __init__(self, model,mod,capa,ava):
+    def __init__(self,ref, model,mod,capa,ava):
+        self.ref= str(ref)
         self.model = str(model)
         self.mod = str(mod)
         self.capa = str(capa)
         self.ava = str(ava)
 
 class DualItem(object):
-    def __init__(self, model,mod,model2,mod2,capa1,capa2, t_capa, ava):
+    def __init__(self,ref, model,mod,model2,mod2,capa1,capa2, t_capa, ava):
+        self.ref= str(ref)
         self.model = str(model)
         self.mod = str(mod)
         self.model2 = str(model2)
@@ -170,9 +172,9 @@ def getScenarii(test,CIR,AVAILABILITY):
     goodCIR['multi'] = list()
     for prof in good_pro:
         if prof[2]==80.0:
-            e_band_sitems.append(SingleItem(prof[0],prof[1],prof[-3],prof[-1]))
             i = i+1
             met = str(i)
+            e_band_sitems.append(SingleItem(met,prof[0],prof[1],prof[-3],prof[-1]))
             outstr=outstr+str(prof[0])+' -- '+str(prof[-3])+' Mbps -- '+str(prof[-1])+'%\n'
     outstr=outstr+'---- eBand (XPIC 2+0) ----\n'
     i=0
@@ -185,7 +187,7 @@ def getScenarii(test,CIR,AVAILABILITY):
             i = i+1
             met = str(i)
             goodCIR['ebandx'].append(pro)
-            e_xpic_items.append(SingleItem(pro[0],pro[1],str(int(pro[-3])*2),pro[-1]))
+            e_xpic_items.append(SingleItem(met,pro[0],pro[1],str(int(pro[-3])*2),pro[-1]))
             outstr=outstr+str(pro[0])+' -- '+str(int(pro[-3])*2)+' Mbps -- '+str(pro[-1])+'%\n'
     table = getProfilperCapa(0,False,True,True)
     e_bands = getProb(table, DISTANCE, AVAILABILITY,rr,False)
@@ -200,7 +202,7 @@ def getScenarii(test,CIR,AVAILABILITY):
                     i = i + 1
                     met = str(i)
                     goodCIR['multi'].append((pro,leg))
-                    e_mw_ditems.append(DualItem(pro[0],pro[1],leg[0],leg[1],pro[-3],leg[-3],str(int(pro[-3])+int(leg[-3])),pro[-1]))
+                    e_mw_ditems.append(DualItem(met,pro[0],pro[1],leg[0],leg[1],pro[-3],leg[-3],str(int(pro[-3])+int(leg[-3])),pro[-1]))
                     outstr=outstr+str(pro[0])+' + '+str(leg[0])+' -- '+str(int(pro[-3])+int(leg[-3]))+' Mbps -- '+str(pro[-1])+'%\n'
 
     outstr=outstr+'---- MW (1+0) ----\n'
@@ -210,7 +212,7 @@ def getScenarii(test,CIR,AVAILABILITY):
             i = i+1
             met = str(i)
             goodCIR['mw'].append((prof))
-            mw_sitems.append(SingleItem(prof[0],prof[1], prof[-3], prof[-1]))
+            mw_sitems.append(SingleItem(met,prof[0],prof[1], prof[-3], prof[-1]))
             outstr=outstr+str(prof[0])+' -- '+str(prof[-3])+' Mbps -- '+str(prof[-1])+'%\n'
 
     table = getProfilperCapa(0,True,False,True)
@@ -222,7 +224,7 @@ def getScenarii(test,CIR,AVAILABILITY):
             i = i+1
             met = str(i)
             goodCIR['mwx'].append((pro))
-            mw_items.append(SingleItem(pro[0],pro[1], str(int(pro[-3])*2), pro[-1]))
+            mw_items.append(SingleItem(met,pro[0],pro[1], str(int(pro[-3])*2), pro[-1]))
             outstr = outstr + str(pro[0]) + ' -- ' +str(int(pro[-3])*2) + ' Mbps -- ' + str(
                 pro[-1]) + '%\n'
     eb_stab = SingleTable(e_band_sitems, classes=['table table-striped table-bordered'],
@@ -272,37 +274,37 @@ def getScenariiPIR(goodCIR):
     if final.__contains__('eband'):
         for prof in final['eband']:
             i = i + 1
-            e_band_sitems.append(SingleItem(str(i) + 'a', prof[0][0], prof[0][-3], prof[0][-1]))
-            e_band_sitems.append(SingleItem(str(i) + 'ap', prof[1][0], prof[1][-3], prof[1][-1]))
+            e_band_sitems.append(SingleItem(str(i) + 'a', prof[0][0],prof[0][1], prof[0][-3], prof[0][-1]))
+            e_band_sitems.append(SingleItem(str(i) + 'ap', prof[1][0],prof[1][1], prof[1][-3], prof[1][-1]))
     i = 0
     if final.__contains__('ebandx'):
         for pro in final['ebandx']:
             i = i + 1
-            e_xpic_items.append(SingleItem(str(i) + 'b', pro[0][0], pro[0][-3] * 2, pro[0][-1]))
-            e_xpic_items.append(SingleItem(str(i) + 'bp', pro[1][0], pro[1][-3] * 2, pro[1][-1]))
+            e_xpic_items.append(SingleItem(str(i) + 'b', pro[0][0],pro[0][1], str(int(pro[0][-3] * 2)), pro[0][-1]))
+            e_xpic_items.append(SingleItem(str(i) + 'bp', pro[1][0],pro[1][1], str(int(pro[1][-3] * 2)), pro[1][-1]))
     i = 0
     if final.__contains__('mw'):
         for prof in final['mw']:
             i = i + 1
-            mw_sitems.append(SingleItem(str(i) + 'c', prof[0][0], prof[0][-3], prof[0][-1]))
-            mw_sitems.append(SingleItem(str(i) + 'cp', prof[1][0], prof[1][-3], prof[1][-1]))
+            mw_sitems.append(SingleItem(str(i) + 'c', prof[0][0],prof[0][1], prof[0][-3], prof[0][-1]))
+            mw_sitems.append(SingleItem(str(i) + 'cp', prof[1][0],prof[1][1], prof[1][-3], prof[1][-1]))
     i = 0
     if final.__contains__('mwx'):
         for pro in final['mwx']:
             i = i + 1
-            mw_items.append(SingleItem(str(i) + 'd', pro[0][0], pro[0][-3] * 2, pro[0][-1]))
-            mw_items.append(SingleItem(str(i) + 'dp', pro[1][0], pro[1][-3] * 2, pro[1][-1]))
+            mw_items.append(SingleItem(str(i) + 'd', pro[0][0], str(int(pro[0][-3] * 2)), pro[0][-1]))
+            mw_items.append(SingleItem(str(i) + 'dp', pro[1][0],prof[1][1], str(int(pro[1][-3] * 2)), pro[1][-1]))
 
     if final.__contains__('multi'):
         for (a, b) in final['multi']:
             i = i + 1
             (pro, leg) = a
-            prout = DualItem(str(i) + 'e', pro[0], leg[0], pro[-3], leg[-3], pro[-3] + leg[-3],
+            prout = DualItem(str(i) + 'e', pro[0],pro[1],leg[0],leg[1],pro[-3], leg[-3], str(int(pro[-3]) + int(leg[-3])),
                              np.minimum(pro[-1], leg[-1]))
             e_mw_ditems.append(prout)
             # td_html_attrs={'id':str(i)+'p','style':"display: none;"}
             (pro, leg) = b
-            e_mw_ditems.append(DualItem(str(i) + 'ep', pro[0], leg[0], pro[-3], leg[-3], pro[-3] + leg[-3],
+            e_mw_ditems.append(DualItem(str(i) + 'ep',pro[0],pro[1],leg[0],leg[1],pro[-3], leg[-3], str(int(pro[-3]) + int(leg[-3])),
                                         np.minimum(pro[-1], leg[-1])))
 
     eb_stab = SingleTable(e_band_sitems, classes=['table table-striped table-bordered'],
@@ -320,88 +322,29 @@ def getScenariiPIR(goodCIR):
 
 
 def getModel(row, row2):
-    if row.split('_').__len__() > 3:
-        div = row.split('_')
-        mod = div[0]
-        div2 = row2.split('_')
-        mod2 = div2[0]
-        if mod == mod2:
-            if div[-1] != 'X':
-                if div[-1] == 'BPSK':
-                    bw = float(div[2].split('M')[0])
-                    bw2 = float(div2[2].split('M')[0])
-                    if bw < 700 and bw2 / bw in [1.0, 2.0, 4.0]:
-                        return True
-                    elif (bw == 750 or bw == 1000) and bw2 / bw in [1.0, 2.0]:
-                        return True
-                    elif (bw == 1500 or bw == 2000) and bw2 == bw:
-                        return True
-                    else:
-                        return False
-                elif div[-1] != 'BPSK' and div[-2] == div2[-2]:
-                    return True
-                else:
-                    return False
-            else:
-                if div[-3] == div2[-3]:
-                    return True
-                else:
-                    return False
-        else:
-            return False
+    div = row.split('/B')
+    mod = div[0]
+    div2 = row2.split('/B')
+    mod2 = div2[0]
+    if mod == mod2:
+        return True
     else:
-        div = row.split('M')
-        div2 = row2.split('M')
-        srow = row.split('_')
-        srow2 = row2.split('_')
-        if srow[-1] == 'X' and srow2[-1] == 'X':
-            if div[0] == div2[0] and srow[-2] == srow2[-2]:
-                return True
-            else:
-                return False
-        else:
-            if div[0] == div2[0] and srow[-1] == srow2[-1]:
-                return True
-            else:
-                return False
+        return False
+        
+  
 
 
 def getModelMulti(row, rowb, row2, row2b):
-    div = str(row[0]).split('_')
+    div = str(row[0]).split('/B')
     mod = div[0]
-    div2 = str(row2[0]).split('_')
+    div2 = str(row2[0]).split('/B')
     mod2 = div2[0]
-    eban = False
-    if mod == mod2:
-        if div[-1] == 'BPSK':
-            bw = float(div[2].split('M')[0])
-            bw2 = float(div2[2].split('M')[0])
-            if bw < 700 and bw2 / bw in [1.0, 2.0, 4.0]:
-                eban = True
-            elif (bw == 750 or bw == 1000) and bw2 / bw in [1.0, 2.0]:
-                eban = True
-            elif (bw == 1500 or bw == 2000) and bw2 == bw:
-                eban = True
-            else:
-                eban = False
-        elif div[-1] != 'BPSK' and div[-2] == div2[-2]:
-            eban = True
-        else:
-            eban = False
+    modb= str(rowb[0]).split('/B')[0]
+    mod2b = str(row2b[0]).split('/B')[0]
 
-        if eban:
-            div = str(rowb[0]).split('M')
-            div2 = str(row2b[0]).split('M')
-            srow = str(rowb[0]).split('_')
-            srow2 = str(row2b[0]).split('_')
-            # print('div[0] : '+str(div[0])+' div3[0] : '+str(div2[0])+' srow[-1] : '+str(srow[-1])+' srow2[-1] : '+str(srow2[-1])+'\n')
-            if div[0] == div2[0] and srow[-1] == srow2[-1] and row2b[3] > rowb[3]:
-                return True
-            else:
-                return False
-
-        else:
-            return False
+    if mod == mod2 and modb == mod2b and row2[-3]>row[-3] and row2b[-3]>rowb[-3]:
+        return True
     else:
         return False
+        
 
