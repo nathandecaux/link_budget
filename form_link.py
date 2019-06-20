@@ -1,3 +1,5 @@
+import socket
+
 from flask import Flask, render_template, flash,redirect,request,g
 from flask_bootstrap import Bootstrap
 from flask_appconfig import AppConfig
@@ -388,7 +390,8 @@ if __name__ == '__main__':
             ref_mod = ep.ref_mod.data
             g1a = poubelle.getAntGain(d1a, freq)
             g1b = poubelle.getAntGain(d1b, freq)
-            dist = float(form.mf.dist.data)
+            if form.mf.dist.data != None:
+                dist = float(form.mf.dist.data)
             # items = SingleItem(d1a, d1b, el, rr, tau, p0, xpic, equip, freq, card, bw, ref_mod)
             # table = SingleTable([items], classes=['table table-striped'])
             checks = [form.mf.rainp.data, form.mf.modp.data, form.mf.availp.data]
@@ -643,18 +646,26 @@ if __name__ == '__main__':
                 refS3.on_change('value', refUp3)
                 doc.add_root(row(graph3, column(row(column(widgets),column(widgets2)),row(buttons))))
                 #doc.add_root(bk.layouts.grid(children=[[graph3,[[widgets,widgets2],[buttons]]]]))
+
+        def get_free_tcp_port():
+            tcp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            tcp.bind(('', 0))
+            addr, port = tcp.getsockname()
+            tcp.close()
+            return port
+
+        session_port = get_free_tcp_port()
+
         def bk_worker():
             # Can't pass num_procs > 1 in this configuration. If you need to run multiple
             # processes, see e.g. flask_gunicorn_embed.py
-            server = Server({'/bkapp2': bkapp2},port=443,io_loop=IOLoop(), allow_websocket_origin=["localhost"])
+            server = Server({'/bkapp2': bkapp2},port=session_port,io_loop=IOLoop(), allow_websocket_origin=["192.168.179.155"])
             server.start()
             server.io_loop.start()
 
         if form.is_submitted():
-            global BKTHREAD
-            BKTHREAD = Thread(target=bk_worker)
-            BKTHREAD.start()
-            script = server_document('http://localhost:443/bkapp2')
+            Thread(target=bk_worker).start()
+            script = server_document('http://192.168.179.155:'+str(session_port)+'/bkapp2')
             return render_template('graphs.html',graph1=script,title='Graphs viewer')#,rrS=script,graph1=div,graph2=file_html(graph1,CDN,'plot1'),graph3=file_html(graph1,CDN,'plot1'),js_resources=js_resources,css_resources=css_resources)
             # return render_template('graphs.html', graph=html)
 
@@ -1233,17 +1244,31 @@ if __name__ == '__main__':
                 refS3.on_change('value', refUp3)
                 doc.add_root(row(graph3, column(row(column(widgets),column(widgets2)),row(buttons))))
                 #doc.add_root(bk.layouts.grid(children=[[graph3,[[widgets,widgets2],[buttons]]]]))
+
+        def get_free_tcp_port():
+            tcp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            tcp.bind(('', 0))
+            addr, port = tcp.getsockname()
+            tcp.close()
+            return port
+
+        session_port = get_free_tcp_port()
+
+
         def bk_worker():
             # Can't pass num_procs > 1 in this configuration. If you need to run multiple
             # processes, see e.g. flask_gunicorn_embed.py
-            server = Server({'/bkapp': bkapp},port=443,io_loop=IOLoop(), allow_websocket_origin=["localhost"])
+
+            server = Server({'/bkapp': bkapp},port=session_port,io_loop=IOLoop(), allow_websocket_origin=["192.168.179.155"])
             server.start()
             server.io_loop.start()
+            print('pouet'+str(server.port))
+            server.run_until_shutdown()
 
         if form.is_submitted():
             from threading import Thread
             Thread(target=bk_worker).start()
-            script = server_document('http://localhost:443/bkapp')
+            script = server_document('http://192.168.179.155:'+str(session_port)+'/bkapp')
             return render_template('graphs.html',graph1=script,title='Graphs viewer')#,rrS=script,graph1=div,graph2=file_html(graph1,CDN,'plot1'),graph3=file_html(graph1,CDN,'plot1'),js_resources=js_resources,css_resources=css_resources)
             # return render_template('graphs.html', graph=html)
 

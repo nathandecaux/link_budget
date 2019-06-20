@@ -215,6 +215,7 @@ def getScenarii(test,CIR,AVAILABILITY):
                     outstr=outstr+str(pro[0])+' + '+str(leg[0])+' -- '+str(pro[-3]+leg[-3])+' Mbps -- '+str(pro[-1])+'%\n'
 
     outstr=outstr+'---- MW (1+0) ----\n'
+    i=0
     for prof in good_pro:
         if prof[1]!=80.0:
             i = i+1
@@ -238,11 +239,17 @@ def getScenarii(test,CIR,AVAILABILITY):
             mw_items.append(SingleItem(met,pro[0], pro[-3] * 2, pro[-1]))
             outstr = outstr + str(pro[0]) + ' -- ' + str(pro[-3]*2) + ' Mbps -- ' + str(
                 pro[-1]) + '%\n'
-    eb_stab = SingleTable(e_band_sitems,classes=['table table-striped'])
-    ex_tab = SingleTable(e_xpic_items,classes=['table table-striped'])
-    e_mw_tab = DualTable(e_mw_ditems,classes=['table table-striped'])
-    mw_stab = SingleTable(mw_sitems,classes=['table table-striped'])
-    mw_xtab= SingleTable(mw_items,classes=['table table-striped'])
+    eb_stab = SingleTable(e_band_sitems, classes=['table table-striped table-bordered'],
+                          html_attrs={'data-sortable': "true"})
+    eb_stab.table_id = "pouet"
+    ex_tab = SingleTable(e_xpic_items, classes=['table table-striped table-bordered'])
+    ex_tab.table_id = "pouet2"
+    e_mw_tab = DualTable(e_mw_ditems, classes=['table table-striped table-bordered'])
+    e_mw_tab.table_id = "pouet3"
+    mw_stab = SingleTable(mw_sitems, classes=['table table-striped table-bordered'])
+    mw_stab.table_id = "pouet4"
+    mw_xtab = SingleTable(mw_items, classes=['table table-striped table-bordered'])
+    mw_xtab.table_id = "pouet5"
     if test==0 and PIR != 0:
         test=2
         return getScenariiPIR(goodCIR)
