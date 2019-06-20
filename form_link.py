@@ -746,17 +746,20 @@ if __name__ == '__main__':
             return port
 
         session_port = get_free_tcp_port()
+        addr = 'localhost'
+        if len(sys.argv) >1 : addr = sys.argv[1]
 
         def bk_worker():
             # Can't pass num_procs > 1 in this configuration. If you need to run multiple
             # processes, see e.g. flask_gunicorn_embed.py
-            server = Server({'/bkapp2': bkapp2},port=session_port,io_loop=IOLoop(), allow_websocket_origin=["192.168.179.155"])
+            
+            server = Server({'/bkapp2': bkapp2},port=session_port,io_loop=IOLoop(), allow_websocket_origin=[addr])
             server.start()
             server.io_loop.start()
 
         if form.is_submitted():
             Thread(target=bk_worker).start()
-            script = server_document('http://192.168.179.155:'+str(session_port)+'/bkapp2')
+            script = server_document('http://'+addr+':'+str(session_port)+'/bkapp2')
             return render_template('graphs.html',graph1=script,title='Graphs viewer')#,rrS=script,graph1=div,graph2=file_html(graph1,CDN,'plot1'),graph3=file_html(graph1,CDN,'plot1'),js_resources=js_resources,css_resources=css_resources)
             # return render_template('graphs.html', graph=html)
 
@@ -1344,13 +1347,14 @@ if __name__ == '__main__':
             return port
 
         session_port = get_free_tcp_port()
-
+        addr = 'localhost'
+        if len(sys.argv) >1: addr = sys.argv[1]
 
         def bk_worker():
             # Can't pass num_procs > 1 in this configuration. If you need to run multiple
             # processes, see e.g. flask_gunicorn_embed.py
 
-            server = Server({'/bkapp': bkapp},port=session_port,io_loop=IOLoop(), allow_websocket_origin=["192.168.179.155"])
+            server = Server({'/bkapp': bkapp},port=session_port,io_loop=IOLoop(), allow_websocket_origin=[addr])
             server.start()
             server.io_loop.start()
             print('pouet'+str(server.port))
@@ -1359,7 +1363,7 @@ if __name__ == '__main__':
         if form.is_submitted():
             from threading import Thread
             Thread(target=bk_worker).start()
-            script = server_document('http://192.168.179.155:'+str(session_port)+'/bkapp')
+            script = server_document('http://'+addr+':'+str(session_port)+'/bkapp')
             return render_template('graphs.html',graph1=script,title='Graphs viewer')#,rrS=script,graph1=div,graph2=file_html(graph1,CDN,'plot1'),graph3=file_html(graph1,CDN,'plot1'),js_resources=js_resources,css_resources=css_resources)
             # return render_template('graphs.html', graph=html)
 
