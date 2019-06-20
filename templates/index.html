@@ -16,11 +16,16 @@
     $( document ).ready(function() {
     $("#lp-ele").attr('required', 'required');
     $("#lp-p_entry").attr('required', 'required')
+    $("#mf-dist").css('display', 'none');
+    $("label[for='mf-dist']").css('display','none')
+
+
     if (($("#ep-cb0").val() == "Yes") || ($("#ep-cb0").val()) == "No" )
     {
         $xpic = $('#ep-cb0').val();
         Sijax.request('cb0',[$xpic]);
     }
+
 });
 </script>
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
@@ -52,6 +57,22 @@ function action()
     {
     $xpic = $('#ep-cb0').val();
     Sijax.request('cb0',[$xpic]);});
+
+   $("#mf-rainp").click(function()
+   {
+    if ($("#mf-rainp").is(':checked'))
+        {
+            $("#mf-dist").css('display', '');
+            $("#mf-dist").attr('required', 'required');
+            $("label[for='mf-dist']").css('display','')
+        }
+    else
+    {
+          $("#mf-dist").removeAttr('required');
+          $("#mf-dist").css('display', 'none');
+          $("label[for='mf-dist']").css('display','none')
+    }
+   });
 
   $("#ep-cb1").change(function()
     {

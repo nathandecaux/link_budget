@@ -10,6 +10,12 @@
 <script type="text/javascript">
     {{ g.sijax.get_js()|safe }}
 </script>
+<link href="https://unpkg.com/bootstrap-table@1.14.2/dist/bootstrap-table.min.css" rel="stylesheet">
+
+<script src="https://unpkg.com/bootstrap-table@1.14.2/dist/bootstrap-table.min.js"></script>
+
+
+
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
@@ -20,6 +26,92 @@ $(function(){
   $("#header").load("static/header.html");
 });
 </script>
+
+<script defer src="https://code.jquery.com/jquery-3.3.1.js"></script>
+<script defer src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+<script defer src="https://cdn.datatables.net/1.10.19/js/dataTables.bootstrap4.min.js"></script>
+<script defer>
+    $(document).ready(function() {
+    $('#pouet').DataTable({"ordering": false,"filtering": false});
+    $('#pouet2').DataTable({"ordering": false,"filtering": false});
+    $('#pouet3').DataTable({"ordering": false,"filtering": false});
+    $('#pouet4').DataTable({"ordering": false,"filtering": false});
+    $('#pouet5').DataTable({"ordering": false,"filtering": false});
+     $('#pouet').on('click', 'tr', function ()
+    {
+        next = $(this).attr('id')+'p';
+        if ($('#'+next).css('display')=='none')
+        {
+            $('#'+next).css('display','');
+        }
+
+        else
+        {
+            $('#'+next).css('display','none')
+        }
+    });
+
+     $('#pouet2').on('click', 'tr', function ()
+    {
+        next = $(this).attr('id')+'p';
+        if ($('#'+next).css('display')=='none')
+        {
+            $('#'+next).css('display','');
+        }
+
+        else
+        {
+            $('#'+next).css('display','none')
+        }
+    });
+
+     $('#pouet3').on('click', 'tr', function ()
+    {
+        next = $(this).attr('id')+'p';
+        if ($('#'+next).css('display')=='none')
+        {
+            $('#'+next).css('display','');
+        }
+
+        else
+        {
+            $('#'+next).css('display','none')
+        }
+    });
+
+     $('#pouet4').on('click', 'tr', function ()
+    {
+        next = $(this).attr('id')+'p';
+        if ($('#'+next).css('display')=='none')
+        {
+            $('#'+next).css('display','');
+        }
+
+        else
+        {
+            $('#'+next).css('display','none')
+        }
+    });
+
+     $('#pouet5').on('click', 'tr', function ()
+    {
+        next = $(this).attr('id')+'p';
+        if ($('#'+next).css('display')=='none')
+        {
+            $('#'+next).css('display','');
+        }
+
+        else
+        {
+            $('#'+next).css('display','none')
+        }
+    });
+
+
+} );
+</script>
+
+
 <body>
   <title>Scenario table</title>
 
@@ -38,9 +130,11 @@ $(function(){
             </div>
             <div id="collapse1" class="collapse show" aria-labelledby="heading1" data-parent="#accordionExample">
                 <div class="card-body">
-                  {{
-                    table|safe
-                  }}
+                    <div class="bootstrap-table">
+                      {{
+                        table|safe
+                      }}
+                    </div>
                 </div>
             </div>
         </div>

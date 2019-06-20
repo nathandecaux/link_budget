@@ -1,7 +1,7 @@
 from flask import Flask, render_template, flash,redirect,request,g
 from flask_bootstrap import Bootstrap
 from flask_appconfig import AppConfig
-from bokeh.server.server import Server
+from bokeh.server.server import Server,BaseServer
 from tornado.ioloop import IOLoop
 import bokeh.palettes as bkolor
 import itertools
@@ -44,6 +44,8 @@ from flask_table import Table, Col
 global BKTHREAD
 BKTHREAD = Thread()
 BKTHREAD.start()
+app = Flask(__name__, static_url_path='/static')
+
 
 class SingleTable(Table):
     g1a = Col('Antenna Gain A (dBm')
@@ -123,6 +125,8 @@ class EquipForm(Form):
 class ScenarioForm(Form):
     capa = DecimalField('Capacity (Mbps)')
     margin = DecimalField('Margin (Mbps)')
+    peak = DecimalField('PIR (Mbps)')
+    avaiPIR = DecimalField('Availability PIR ( %/year )')
     dist = DecimalField('Distance (km)')
 
 class GlobalScenarioForm(Form):
@@ -131,9 +135,10 @@ class GlobalScenarioForm(Form):
     submit_button = SubmitField('Submit Form')
 
 class MetricForm(Form):
-    rainp = BooleanField('Rain attenuation')
-    modp = BooleanField('Modulation / Distance')
+    modp = BooleanField('Capacity / Distance')
     availp = BooleanField('Availability / Distance')
+    rainp = BooleanField('Capacity / Availability')
+    dist = DecimalField('Distance (km)')
     def validate(self):
         return True
 class GlobalForm(Form):
@@ -149,7 +154,6 @@ class GlobalFormEric(Form):
     submit_button = SubmitField('Submit Form')
 
 if __name__ == '__main__':
-    app = Flask(__name__,static_url_path='/static')
     path = os.path.join('.', os.path.dirname(__file__), 'static/js/sijax/')
     app.config['SIJAX_STATIC_PATH'] = path
     app.config['SIJAX_JSON_URI'] = '/static/js/sijax/json2.js'
@@ -384,6 +388,7 @@ if __name__ == '__main__':
             ref_mod = ep.ref_mod.data
             g1a = poubelle.getAntGain(d1a, freq)
             g1b = poubelle.getAntGain(d1b, freq)
+            dist = float(form.mf.dist.data)
             # items = SingleItem(d1a, d1b, el, rr, tau, p0, xpic, equip, freq, card, bw, ref_mod)
             # table = SingleTable([items], classes=['table table-striped'])
             checks = [form.mf.rainp.data, form.mf.modp.data, form.mf.availp.data]
@@ -408,16 +413,16 @@ if __name__ == '__main__':
                 widgets = list()
                 widgets2 = list()
                 buttons = list()
-                g1aS = Select(title="Antenna Diameter A (m)",value=str(d1a),options=link.gae.choices)
-                g1bS = Select(title="Antenna Diameter B (m)",value=str(d1b),options=link.gae.choices)
+                g1as2 = Select(title="Antenna Diameter A (m)",value=str(d1a),options=link.gae.choices)
+                g1bS2 = Select(title="Antenna Diameter B (m)",value=str(d1b),options=link.gae.choices)
                 polarS = Select(title="Polarization",value=str(link.polar.data),options=link.polar.choices)
                 #elS2 = Slider(title="Elevation (degrees)", value=float(el), start=0, end=45, step=10)
                 rrS2 = Slider(title="Rainrate (mm/h)", value=float(rr), start=0, end=110, step=1)
                 pS = TextInput(title="Availability",value=str(link.p_entry.data))#Spinner(title="Availability", value=float(link.p_entry.data), low=99, high=100,step=0.001)
                 add_button2 = Button(label='Add Line')
                 refresh_button2 = Button(label='Refresh')
-                widgets.append(g1aS)
-                widgets.append(g1bS)
+                widgets.append(g1as2)
+                widgets.append(g1bS2)
                 widgets.append(polarS)
                 widgets.append(rrS2)
                 widgets.append(pS)
@@ -451,8 +456,8 @@ if __name__ == '__main__':
                 def update_data2(event):
 
                     p0 = np.round(100.0 - float(pS.value),5)
-                    g1a = float(poubelle.getAntGain(float(g1aS.value.__str__()), freq))
-                    g1b = float(poubelle.getAntGain(float(g1bS.value.__str__()), freq))
+                    g1a = float(poubelle.getAntGain(float(g1as2.value.__str__()), freq))
+                    g1b = float(poubelle.getAntGain(float(g1bS2.value.__str__()), freq))
                     # truc = [g1a,g1b,p0,rrS2.value,float(polarS.value),xpicS.value, equipS.value, float(freqS.value), cardS.value, float(bwS.value), ref_mod, amS.value]
                     # print(truc)
                     #plotMod(self,g1a,g1b,el,geoloc,rr,tau,p0,xpic,equip,freq,card,bw,ref_mod,am)
@@ -463,8 +468,8 @@ if __name__ == '__main__':
 
                 def add_data2(event):
                     p0 = 100.0 - float(pS.value)
-                    g1a = float(poubelle.getAntGain(float(g1aS.value.__str__()), freq))
-                    g1b =float(poubelle.getAntGain(float(g1bS.value.__str__()), freq))
+                    g1a = float(poubelle.getAntGain(float(g1as2.value.__str__()), freq))
+                    g1b =float(poubelle.getAntGain(float(g1bS2.value.__str__()), freq))
                     curr_dat = graph.plotMod(g1a,g1b, el, geoloc,
                                   rrS2.value,float(polarS.value), p0, xpicS.value, equipS.value, float(freqS.value), cardS.value, float(bwS.value), ref_mod)
                     graph2.line(curr_dat['x'],curr_dat['y'], color = next(colors),line_width=2)
@@ -523,19 +528,17 @@ if __name__ == '__main__':
                 buttons = list()
                 lines = list()
                 g1aS3 = Select(title="Antenna Diameter A (m)", value=str(d1a), options=link.gae.choices)
-                g1bS3 = Select(title="Antenna Diameter B (m)", value=str(d1b), options=link.gae.choices)
+                g1bS23 = Select(title="Antenna Diameter B (m)", value=str(d1b), options=link.gae.choices)
                 polarS3 = Select(title="Polarization", value=str(link.polar.data), options=link.polar.choices)
                 # elS2 = Slider(title="Elevation (degrees)", value=float(el), start=0, end=45, step=10)
                 rrS3 = Slider(title="Rainrate (mm/h)", value=float(rr), start=0, end=110, step=1)
-                pS3 = TextInput(title="Availability", value=str(
-                    link.p_entry.data))  # Spinner(title="Availability", value=float(link.p_entry.data), low=99, high=100,step=0.001)
+
                 add_button3 = Button(label='Add Line')
                 refresh_button3 = Button(label='Refresh')
                 widgets.append(g1aS3)
-                widgets.append(g1bS3)
+                widgets.append(g1bS23)
                 widgets.append(polarS3)
                 widgets.append(rrS3)
-                widgets.append(pS3)
                 buttons.append(refresh_button3)
                 xpicS3 = Select(title="Adaptative Modulation", value=str(xpic), options=ep.cb0.choices)
                 equipS3 = Select(title="Equipment", value=str(equip), options=cb0Ch(None, xpic))
@@ -555,17 +558,15 @@ if __name__ == '__main__':
                 colors3 = itertools.cycle(bkolor.Category10_10)
                 source3 = plt.ColumnDataSource(
                     data=graph.plotAvail(g1a, g1b, el, geoloc, rr, tau, p0, xpic, equip, freq, card, bw, ref_mod))
-                graph3 = plt.figure(title='Capacity according to the distance',
-                                    x_axis_label='Distance (km)', y_axis_label='Capacity (Mbps)',)
+                graph3 = plt.figure(title='Availability according to the distance',
+                                    x_axis_label='Distance (km)', y_axis_label='Availability (%)',)
                 l = graph3.line('x', 'y', source=source3, color=next(colors3),line_width=2)
                 lines.append((str(rr),[l]))
                 # graph3.plot_width = 1000
                 # graph3.plot_height = 800
                 def update_data3(event):
-
-                    p0 = np.round(100.0 - float(pS3.value), 5)
                     g1a = float(poubelle.getAntGain(float(g1aS3.value.__str__()), freq))
-                    g1b = float(poubelle.getAntGain(float(g1bS3.value.__str__()), freq))
+                    g1b = float(poubelle.getAntGain(float(g1bS23.value.__str__()), freq))
                     # truc = [g1a,g1b,p0,rrS2.value,float(polarS.value),xpicS.value, equipS.value, float(freqS.value), cardS.value, float(bwS.value), ref_mod, amS.value]
                     # print(truc)
                     # plotAvail(self,g1a,g1b,el,geoloc,rr,tau,p0,xpic,equip,freq,card,bw,ref_mod,am)
@@ -576,9 +577,8 @@ if __name__ == '__main__':
                                            float(freqS3.value), cardS3.value, float(bwS3.value), refS3.value)).data
 
                 def add_data3(event):
-                    p0 = 100.0 - float(pS3.value)
                     g1a = float(poubelle.getAntGain(float(g1aS3.value.__str__()), freq))
-                    g1b = float(poubelle.getAntGain(float(g1bS3.value.__str__()), freq))
+                    g1b = float(poubelle.getAntGain(float(g1bS23.value.__str__()), freq))
                     curr_dat = graph.plotAvail(g1a, g1b, el, geoloc,
                                              rrS3.value, float(polarS3.value), p0, xpicS3.value, equipS3.value,
                                              float(freqS3.value), cardS3.value, float(bwS3.value), refS3.value)
@@ -665,6 +665,7 @@ if __name__ == '__main__':
         mods_list = list()
         form = GlobalForm()
         def cb0Ch(obj_response,xpic):
+            db = tinydb.TinyDB('db_huawei.json')
             if obj_response!=None:
                 obj_response.html('#ep-cb1','')
                 obj_response.html_append('#ep-cb1', '<option>----</option>')
@@ -688,6 +689,7 @@ if __name__ == '__main__':
 
 
         def equiCh(obj_response,xpic,equi):
+            db = tinydb.TinyDB('db_huawei.json')
             if obj_response != None:
                 obj_response.html('#ep-fe','')
                 obj_response.html_append('#ep-fe', '<option>----</option>')
@@ -716,6 +718,7 @@ if __name__ == '__main__':
 
 
         def freqCh(obj_response,xpic,equi,freq):
+            db = tinydb.TinyDB('db_huawei.json')
             if obj_response != None:
                 obj_response.html('#ep-carde','')
                 obj_response.html_append('#ep-carde', '<option>----</option>')
@@ -750,6 +753,7 @@ if __name__ == '__main__':
 
 
         def cardCh(obj_response,xpic,equi,freq,carde):
+            db = tinydb.TinyDB('db_huawei.json')
             if obj_response != None:
                 obj_response.html('#ep-cpe','')
                 obj_response.html_append('#ep-cpe', '<option>----</option>')
@@ -787,7 +791,7 @@ if __name__ == '__main__':
             return int(str(mod).split('QAM')[0])
 
         def bandwCh(obj_response,xpic,equi,freq,carde,bandw):
-
+            db = tinydb.TinyDB('db_huawei.json')
             if str(obj_response) != 'None':
                 obj_response.html('#ep-ref_mod','')
                 obj_response.html_append('#ep-ref_mod', '<option>----</option>')
@@ -841,7 +845,8 @@ if __name__ == '__main__':
             el = float(link.ele.data)
             URL = "https://nominatim.openstreetmap.org/search"
             geoloc = (0, 0)
-
+            if form.mf.dist.data != None:
+                dist = float(form.mf.dist.data)
             js_resources = INLINE.render_js()
             css_resources = INLINE.render_css()
             if link.xe.data != '':
@@ -875,54 +880,143 @@ if __name__ == '__main__':
             graph = MakeGraph(g1a, g1b, el, geoloc, rr, tau, p0, xpic, equip, freq, card, bw, ref_mod,am,checks[0],
                               checks[1], checks[2])
             if(checks[0]):
-                rrS = Slider(title="rain", value=float(rr), start=0, end=110, step=10)
-                freqS = Slider(title="freq", value=float(freq), start=6, end=80, step=1)
-                refresh_button = Button(label='Refresh')
-                source1 = plt.ColumnDataSource(
-                    data=graph.plotRain(g1a, g1b, el, geoloc, rr, tau, p0, xpic, equip, freq, card, bw, ref_mod, am))
-                graph1 = plt.figure(title='Rain-caused exceeded attenuation according to the distance',
-                                    x_axis_label='Distance (km)', y_axis_label='Attenuation (dB)')
-                graph1.line('x', 'y', source=source1)
-                def update_data(event):
-                    source1.data = plt.ColumnDataSource(
-                        data=graph.plotRain(g1a, g1b, el, geoloc, rrS.value, tau, p0, xpic, equip, freqS.value, card, bw, ref_mod,
-                                            am)).data
-                graph1.add_tools(HoverTool())
-                refresh_button.on_click(handler=update_data)
-                doc.add_root(row(graph1,column(rrS,freqS,refresh_button)))
-            if(checks[1]):
                 widgets = list()
                 widgets2 = list()
                 buttons = list()
-                g1aS = Select(title="Antenna Diameter A (m)",value=str(d1a),options=link.gae.choices)
-                g1bS = Select(title="Antenna Diameter B (m)",value=str(d1b),options=link.gae.choices)
-                polarS = Select(title="Polarization",value=str(link.polar.data),options=link.polar.choices)
-                #elS2 = Slider(title="Elevation (degrees)", value=float(el), start=0, end=45, step=10)
-                rrS2 = Slider(title="Rainrate (mm/h)", value=float(rr), start=0, end=110, step=1)
-                pS = TextInput(title="Availability",value=str(link.p_entry.data))#Spinner(title="Availability", value=float(link.p_entry.data), low=99, high=100,step=0.001)
+                g1aS = Select(title="Antenna Diameter A (m)", value=str(d1a), options=link.gae.choices)
+                g1bS = Select(title="Antenna Diameter B (m)", value=str(d1b), options=link.gae.choices)
+                polarS = Select(title="Polarization", value=str(link.polar.data), options=link.polar.choices)
+                # elS2 = Slider(title="Elevation (degrees)", value=float(el), start=0, end=45, step=10)
+                rrS= Slider(title="Rainrate (mm/h)", value=float(rr), start=0, end=110, step=1)
+                dS = Slider(title="Distance km", value=float(dist), start=0, end=25, step=0.5)
+
                 add_button2 = Button(label='Add Line')
                 refresh_button2 = Button(label='Refresh')
-
                 widgets.append(g1aS)
                 widgets.append(g1bS)
                 widgets.append(polarS)
-                widgets.append(rrS2)
-                widgets.append(pS)
-
+                widgets.append(rrS)
+                widgets.append(dS)
                 buttons.append(refresh_button2)
-                xpicS = Select(title="XPIC",value=str(xpic),options=ep.cb0.choices)
-                equipS = Select(title="Equipment",value=str(equip),options=cb0Ch(None,xpic))
-                freqS = Select(title="Frequency (GHz)",value=str(freq),options=equiCh(None,xpic,equip))
-                cardS = Select(title="Modem + ODU",value=str(card),options=freqCh(None,xpic,equip,freq))
-                bwS = Select(title="Bandwidth (MHz)", value=str(bw), options=cardCh(None,xpic,equip,freq,card))
-                amS = Select(title="Adaptative Modulation", value=str(am), options=ep.am.choices)
+                xpicS = Select(title="Adaptative Modulation", value=str(xpic), options=ep.cb0.choices)
+                equipS = Select(title="Equipment", value=str(equip), options=cb0Ch(None, xpic))
+                freqS = Select(title="Frequency (GHz)", value=str(freq), options=equiCh(None, xpic, equip))
+                cardS = Select(title="Modem + ODU", value=str(card), options=freqCh(None, xpic, equip, freq))
+                bwS = Select(title="Bandwidth (MHz)", value=str(bw), options=cardCh(None, xpic, equip, freq, card))
 
                 widgets2.append(xpicS)
                 widgets2.append(equipS)
                 widgets2.append(freqS)
                 widgets2.append(cardS)
                 widgets2.append(bwS)
-                widgets2.append(amS)
+                buttons.append(add_button2)
+
+                colors = itertools.cycle(bkolor.Category10_10)
+                source2 = plt.ColumnDataSource(
+                    data=graph.plotRain(g1a, g1b, el, geoloc, rr, tau, p0, xpic, equip, freq, card, bw, ref_mod,am,dist))
+
+                graph1 = plt.figure(title='Capacity according to the availability',
+                                    x_axis_label='Availability (%)', y_axis_label='Capacity (Mbps)')
+                graph1.line('x', 'y', source=source2, color=next(colors), line_width=2)
+
+                def update_data(event):
+                    g1a = float(poubelle.getAntGain(float(g1aS.value.__str__()), freq))
+                    g1b = float(poubelle.getAntGain(float(g1bS.value.__str__()), freq))
+
+                    source2.data = plt.ColumnDataSource(
+                        data=graph.plotRain(g1a, g1b, el, geoloc,
+                                           rrS.value, float(polarS.value), p0, xpicS.value, equipS.value,
+                                           float(freqS.value), cardS.value, float(bwS.value), ref_mod,am,dS.value)).data
+
+                def add_data(event):
+                    g1a = float(poubelle.getAntGain(float(g1aS.value.__str__()), freq))
+                    g1b = float(poubelle.getAntGain(float(g1bS.value.__str__()), freq))
+                    curr_dat = graph.plotRain(g1a, g1b, el, geoloc,
+                                             rrS.value, float(polarS.value), p0, xpicS.value, equipS.value,
+                                             float(freqS.value), cardS.value, float(bwS.value), ref_mod,am,dS.value)
+                    graph1.line(curr_dat['x'], curr_dat['y'], color=next(colors), line_width=2)
+                    graph1.add_tools(HoverTool())
+
+                def xpicUp(attr, old, new):
+                    equipS.options = list(cb0Ch(None, xpicS.value))
+
+                def equipUp(attr, old, new):
+                    if new != []:
+                        if isinstance(new, list):
+                            new = new[0]
+                        equipS.value = new
+                        freqS.options = list(equiCh(None, xpicS.value, new))
+
+                def freqUp(attr, old, new):
+                    if new != []:
+                        if isinstance(new, list):
+                            new = new[0]
+                        freqS.value = new
+                        cardS.options = list(freqCh(None, xpicS.value, equipS.value, new))
+                        # bwS.options= list(cardCh(None,xpicS.value,equipS.value,freqS.value,cardS.value))
+
+                def cardUp(attr, old, new):
+                    if new != []:
+                        if isinstance(new, list):
+                            new = new[0]
+                        cardS.value = new
+                        bwS.options = list(cardCh(None, xpicS.value, equipS.value, freqS.value, new))
+
+                def bwUp(attr, old, new):
+                    if new != []:
+                        if isinstance(new, list):
+                            new = new[0]
+                        bwS.value = new
+
+                # graph2.add_tools(HoverTool())
+                graph1.css_classes = ["container"]
+                refresh_button2.on_click(handler=update_data)
+                add_button2.on_click(handler=add_data)
+                xpicS.on_change('value', xpicUp)
+                equipS.on_change('value', equipUp)
+                equipS.on_change('options', equipUp)
+                freqS.on_change('value', freqUp)
+                freqS.on_change('options', freqUp)
+                cardS.on_change('value', cardUp)
+                cardS.on_change('options', cardUp)
+                bwS.on_change('options', bwUp)
+                bwS.on_change('value', bwUp)
+
+                doc.add_root(row(graph1, column(row(column(widgets), column(widgets2)), row(buttons))))
+
+            if(checks[1]):
+                widgets = list()
+                widgets2 = list()
+                buttons = list()
+                g1as2 = Select(title="Antenna Diameter A (m)",value=str(d1a),options=link.gae.choices)
+                g1bS2 = Select(title="Antenna Diameter B (m)",value=str(d1b),options=link.gae.choices)
+                polarS2 = Select(title="Polarization",value=str(link.polar.data),options=link.polar.choices)
+                #elS2 = Slider(title="Elevation (degrees)", value=float(el), start=0, end=45, step=10)
+                rrS2 = Slider(title="Rainrate (mm/h)", value=float(rr), start=0, end=110, step=1)
+                pS = TextInput(title="Availability",value=str(link.p_entry.data))#Spinner(title="Availability", value=float(link.p_entry.data), low=99, high=100,step=0.001)
+                add_button2 = Button(label='Add Line')
+                refresh_button2 = Button(label='Refresh')
+
+                widgets.append(g1as2)
+                widgets.append(g1bS2)
+                widgets.append(polarS2)
+                widgets.append(rrS2)
+                widgets.append(pS)
+
+                buttons.append(refresh_button2)
+                xpicS2 = Select(title="XPIC",value=str(xpic),options=ep.cb0.choices)
+                equipS2 = Select(title="Equipment",value=str(equip),options=cb0Ch(None,xpic))
+                freqS2 = Select(title="Frequency (GHz)",value=str(freq),options=equiCh(None,xpic,equip))
+                cardS2 = Select(title="Modem + ODU",value=str(card),options=freqCh(None,xpic,equip,freq))
+                bwS2 = Select(title="Bandwidth (MHz)", value=str(bw), options=cardCh(None,xpic,equip,freq,card))
+                amS2 = Select(title="Adaptative Modulation", value=str(am), options=ep.am.choices)
+
+                widgets2.append(xpicS2)
+                widgets2.append(equipS2)
+                widgets2.append(freqS2)
+                widgets2.append(cardS2)
+                widgets2.append(bwS2)
+                widgets2.append(amS2)
                 buttons.append(add_button2)
 
                 colors = itertools.cycle(bkolor.Category10_10)
@@ -941,54 +1035,54 @@ if __name__ == '__main__':
                 def update_data2(event):
 
                     p0 = np.round(100.0 - float(pS.value),5)
-                    g1a = float(poubelle.getAntGain(float(g1aS.value.__str__()), freq))
-                    g1b = float(poubelle.getAntGain(float(g1bS.value.__str__()), freq))
-                    # truc = [g1a,g1b,p0,rrS2.value,float(polarS.value),xpicS.value, equipS.value, float(freqS.value), cardS.value, float(bwS.value), ref_mod, amS.value]
+                    g1a = float(poubelle.getAntGain(float(g1as2.value.__str__()), freq))
+                    g1b = float(poubelle.getAntGain(float(g1bS2.value.__str__()), freq))
+                    # truc = [g1a,g1b,p0,rrS2.value,float(polarS2.value),xpicS2.value, equipS2.value, float(freqS2.value), cardS2.value, float(bwS2.value), ref_mod, amS2.value]
                     # print(truc)
                     #plotMod(self,g1a,g1b,el,geoloc,rr,tau,p0,xpic,equip,freq,card,bw,ref_mod,am)
                     source2.data = plt.ColumnDataSource(
                         data=graph.plotMod(g1a,g1b, el, geoloc,
-                                  rrS2.value,float(polarS.value), p0,xpicS.value, equipS.value, float(freqS.value), cardS.value, float(bwS.value), ref_mod, amS.value)).data
+                                  rrS2.value,float(polarS2.value), p0,xpicS2.value, equipS2.value, float(freqS2.value), cardS2.value, float(bwS2.value), ref_mod, amS2.value)).data
 
 
                 def add_data2(event):
                     p0 = 100.0 - float(pS.value)
-                    g1a = float(poubelle.getAntGain(float(g1aS.value.__str__()), freq))
-                    g1b =float(poubelle.getAntGain(float(g1bS.value.__str__()), freq))
+                    g1a = float(poubelle.getAntGain(float(g1as2.value.__str__()), freq))
+                    g1b =float(poubelle.getAntGain(float(g1bS2.value.__str__()), freq))
                     curr_dat = graph.plotMod(g1a,g1b, el, geoloc,
-                                  rrS2.value,float(polarS.value), p0, xpicS.value, equipS.value, float(freqS.value), cardS.value, float(bwS.value), ref_mod, amS.value)
+                                  rrS2.value,float(polarS2.value), p0, xpicS2.value, equipS2.value, float(freqS2.value), cardS2.value, float(bwS2.value), ref_mod, amS2.value)
                     graph2.line(curr_dat['x'],curr_dat['y'], color = next(colors),line_width=2)
                     graph2.add_tools(HoverTool())
 
-                def xpicUp(attr,old,new):
-                    equipS.options = list(cb0Ch(None,xpicS.value))
+                def xpicUp2(attr,old,new):
+                    equipS2.options = list(cb0Ch(None,xpicS2.value))
 
-                def equipUp(attr,old,new):
+                def equipUp2(attr,old,new):
                     if new != []:
                         if isinstance(new,list):
                             new = new[0]
-                        equipS.value = new
-                        freqS.options= list(equiCh(None,xpicS.value,new))
+                        equipS2.value = new
+                        freqS2.options= list(equiCh(None,xpicS2.value,new))
 
-                def freqUp(attr,old,new):
+                def freqUp2(attr,old,new):
                     if new != []:
                         if isinstance(new,list):
                             new=new[0]
-                        freqS.value = new
-                        cardS.options= list(freqCh(None,xpicS.value,equipS.value,new))
-                        # bwS.options= list(cardCh(None,xpicS.value,equipS.value,freqS.value,cardS.value))
+                        freqS2.value = new
+                        cardS2.options= list(freqCh(None,xpicS2.value,equipS2.value,new))
+                        # bwS2.options= list(cardCh(None,xpicS.value,equipS2.value,freqS2.value,cardS2.value))
 
-                def cardUp(attr,old,new):
+                def cardUp2(attr,old,new):
                     if new != []:
                         if isinstance(new,list):
                             new=new[0]
-                        cardS.value = new
-                        bwS.options= list(cardCh(None,xpicS.value,equipS.value,freqS.value,new))
-                def bwUp(attr,old,new):
+                        cardS2.value = new
+                        bwS2.options= list(cardCh(None,xpicS2.value,equipS2.value,freqS2.value,new))
+                def bwUp2(attr,old,new):
                     if new != []:
                         if isinstance(new,list):
                             new=new[0]
-                        bwS.value = new
+                        bwS2.value = new
 
 
 
@@ -996,15 +1090,15 @@ if __name__ == '__main__':
                 graph2.css_classes = ["container"]
                 refresh_button2.on_click(handler=update_data2)
                 add_button2.on_click(handler=add_data2)
-                xpicS.on_change('value',xpicUp)
-                equipS.on_change('value',equipUp)
-                equipS.on_change('options', equipUp)
-                freqS.on_change('value',freqUp)
-                freqS.on_change('options',freqUp)
-                cardS.on_change('value',cardUp)
-                cardS.on_change('options', cardUp)
-                bwS.on_change('options',bwUp)
-                bwS.on_change('value',bwUp)
+                xpicS2.on_change('value',xpicUp2)
+                equipS2.on_change('value',equipUp2)
+                equipS2.on_change('options', equipUp2)
+                freqS2.on_change('value',freqUp2)
+                freqS2.on_change('options',freqUp2)
+                cardS2.on_change('value',cardUp2)
+                cardS2.on_change('options', cardUp2)
+                bwS2.on_change('options',bwUp2)
+                bwS2.on_change('value',bwUp2)
 
                 bkrainp=row(graph2, column(row(column(widgets),column(widgets2)),row(buttons)))
                 bkrainp.sizing_mode='scale_both'
@@ -1148,10 +1242,7 @@ if __name__ == '__main__':
 
         if form.is_submitted():
             from threading import Thread
-            global BKTHREAD
-            BKTHREAD.join()
-            BKTHREAD=Thread(target=bk_worker)
-            BKTHREAD.start()
+            Thread(target=bk_worker).start()
             script = server_document('http://localhost:443/bkapp')
             return render_template('graphs.html',graph1=script,title='Graphs viewer')#,rrS=script,graph1=div,graph2=file_html(graph1,CDN,'plot1'),graph3=file_html(graph1,CDN,'plot1'),js_resources=js_resources,css_resources=css_resources)
             # return render_template('graphs.html', graph=html)
@@ -1167,15 +1258,19 @@ if __name__ == '__main__':
             location = str(link.xe.data)
             #key = 'AIzaSyA3nLe6yUCTTMB82u1LTuWoyGJGvr8gBZg'
             location_detail = {'q': location,'format':'json'}
-            r = requests.get(url=URL, params=location_detail)
-            data = r.json()
-            latitude = float(data[0]['lat'])
-            longitude = float(data[0]['lon'])
+            if location != '':
+                r = requests.get(url=URL, params=location_detail)
+                data = r.json()
+                latitude = float(data[0]['lat'])
+                longitude = float(data[0]['lon'])
+                poubelle.GEOLOCATE = (latitude, longitude)
             poubelle.DIA1 = float(link.gae.data)
             poubelle.DIA2 = float(link.gbe.data)
             poubelle.ELEVATION = float(link.ele.data)
+            if form.sp.peak.data != None and form.sp.avaiPIR.data:
+                poubelle.PIR = float(form.sp.peak.data)
+                poubelle.AVAI_PIR = float(form.sp.avaiPIR.data)
 
-            poubelle.GEOLOCATE = (latitude,longitude)
 
             poubelle.MARG = float(form.sp.margin.data)
             poubelle.POLAR = 0 if link.polar.data=='h' else 90 # float(form.polar.data)
@@ -1183,7 +1278,7 @@ if __name__ == '__main__':
                 poubelle.RR = float(link.rre.data)
             poubelle.AVAILABILITY  = float(link.p_entry.data)
             poubelle.CIR = float(form.sp.capa.data)
-            [eb_stab,ex_tab,e_mw_tab,mw_stab,mw_xtab] = poubelle.getScenarii()
+            [eb_stab,ex_tab,e_mw_tab,mw_stab,mw_xtab] = poubelle.getScenarii(0,float(form.sp.capa.data),float(link.p_entry.data))
             return render_template('tables.html',table=eb_stab,ex_tab=ex_tab,e_mw_tab=e_mw_tab,mw_stab=mw_stab,mw_xtab=mw_xtab,title='Huawei scenario')
 
         return render_template('index.html',form=form,title='Huawei scenario')

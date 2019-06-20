@@ -169,10 +169,36 @@ class MakeGraph():
         table = self.db.table(self.equip)
         for mod in modulations:
             self.modulation_level[mod] = self.getRxThr(mod)
-    def plotRain(self,d1a,d1b,el,geoloc,rr,tau,p0,xpic,equip,freq,card,bw,ref_mod,am):
-        d = np.arange(0.01, 20, 0.01)
-        self.update(d1a,d1b,el,geoloc,rr,tau,p0,xpic,equip,freq,card,bw,ref_mod,am)
-        source1 =  dict(x=d,y=itur.models.itu530.rain_attenuation(0, 0, d, freq, el, 0.01, tau, rr))
+    def plotRain(self,g1a,g1b,el,geoloc,rr,tau,p0,xpic,equip,freq,card,bw,ref_mod,am,d):
+        p1 = np.arange(0.001,1,0.001)
+        self.update(g1a,g1b,el,geoloc,rr,tau,p0,xpic,equip,freq,card,bw,ref_mod,am)
+        self.getThrList()
+
+        rx = (g1a + g1b - 20 * np.log10(
+            (4 * self.pi * d * 1000) / self.wl) - itur.models.itu530.rain_attenuation(0, 0, d, freq, el, p1, tau, rr).value)
+
+        mod_d = list()
+        levels = list(self.modulation_level.values())
+        mods_lab = list(self.modulation_level.keys())
+        tx_mod = dict()
+        capa_mod = dict()
+        for lab in mods_lab:
+            tx_mod[lab] = self.getTx(lab)
+            capa_mod[lab] = self.getCapa(lab)
+        capaline = list()
+
+        for val in rx:
+            max_mod = -100
+            match = False
+            capa = None
+            for lab, mod in self.modulation_level.items():
+                if val + tx_mod[lab] > mod:
+                    max_mod = mod
+                    capa = capa_mod[lab]
+                    match = True
+            capaline.append(float(capa)) if match else capaline.append(0)
+
+        source1 =  dict(x=100-p1,y=capaline)
         return source1
     def plotMod(self,g1a,g1b,el,geoloc,rr,tau,p0,xpic,equip,freq,card,bw,ref_mod,am):
         d = np.arange(0.01, 20, 0.01)
