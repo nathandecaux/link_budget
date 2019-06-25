@@ -84,7 +84,12 @@ For single and cross-polar links, tables are designed as follows :
 
 For E-band + MW links, tables are designed as follows :
 
-> E-Band Model | Microwave Model | E-Band Capacity | MW Capacity | Total Capacity | Availability (returns the minimal one)
+> E-Band Model | Microwave Model | E-Band Capacity | MW Capacity | Total Capacity | Availability (returns the smallest one)
+
+Note that in case of Ericsson equipment, an additionnal 'Modulation' column was necessary.
+
+
+
 
 
 
