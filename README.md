@@ -34,9 +34,16 @@ This is a dynamic form : it consists in selection field whose choices are dynami
 ## Graphs
 
 1. Capacity / Distance 
-Returns a graph showing the expected link capacity according to the distance. The link capacity is calculated according to the highest modulation that can be use, relativly to it Rx threshold and the current Rx level. 
+
+Returns a graph showing the expected link capacity according to the distance. 
+
+>*The link capacity is calculated according to the highest modulation that can be use, relativly to it Rx threshold and the current Rx level.*
+
+>*The Rx level / link budget is obtained calculating the sum of the free space loss, the attenuation caused by the rain (according to the specified availability), antenna gain (according to their diameters) and the maximum Tx Power (depending on the equipment specified)*
+
 
 2. Availability / Distance
 
+Returns a graph showing 
 
 
