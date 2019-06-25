@@ -16,6 +16,10 @@ The link parameters are used in order to calculate the free space loss + the att
 - Site Location : Text field waiting for an address (complete or not). A  geocode of this address is get by requesting the [OpenStreetMap API](https://nominatim.openstreetmap.org). Then, a approximate rainrate (mm/h for 0.01% of a year) is processed using those coordinates and the ITU-R P 837 recommandations
 - Rainrate : In case of offline using / unavailability of the OpenStreetMap API, the rainrate can be directly specified in this field
 
+#### Equipment Profil
+The equipment should be specified in order to get received level thresholds that will be useful to process graphs.
+
+This is a dynamic form : it consists in selection field whose choices are dynamically set according to previous selected values. Choices are then updated using the equipment database.
 
 ## Graphs
 
