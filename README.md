@@ -34,4 +34,5 @@ This is a dynamic form : it consists in selection field whose choices are dynami
 ## Graphs
 
 1. Capacity according to the distance 
+
 Specifying the link profil (Antenna diameters, tilt, geolocation/rainrate (0.01%/year), expected availability) and the equipment, returns a graph showing the expected link capacity according to the distance
