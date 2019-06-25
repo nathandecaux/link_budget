@@ -24,8 +24,9 @@ This is a dynamic form : it consists in selection field whose choices are dynami
 - XPIC : Not implemented yet, but need a 'Yes' or 'No' choice
 - Equipment : Equipment series name
 - Frequency : Band designator
-- Modem Card (+ODU for Huawei) : Workin RF modem card name. >In the case of Huawei full outdoors equipment, the only possible choice is the equipment name itself
--Bandwidth : 
+- Modem Card (+ODU for Huawei) : Workin RF modem card name. 
+>In the case of Huawei full outdoors equipment, the only possible choice is the equipment name itself
+- Bandwidth : 
 
 
 
