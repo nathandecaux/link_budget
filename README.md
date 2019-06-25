@@ -40,6 +40,7 @@ A scenario form must be filled in the 'Scenario' feature, in order to set those 
 - Availability PIR : Must be set if the PIR field is filled 
 - Distance
 
+> *Note : The CIR availability must be set in the 'Availability' field from the Link Profil subform*
 
 ## Graphs
 
@@ -66,5 +67,24 @@ Returns a graph showing the maximum expected capacity according the availability
 > Example : **{x = 99.993 % ; y = 1093 Mbps}** ==> *It means that the link can work for 99.993 % of the time using a 1093 Mbps throughput*
 
 > *Note : By clicking on the associated CheckBox in the 'Graphs' form, an additionnal text field will appear in order to set the Distance value*  
+
+## Scenario
+
+The scenario feature is a tool that will suggest a list of possibilies according to the link and some target capacities (CIR and optionnaly PIR) and related availabilities. After sending the form, the application will show several tables :
+
+1. E-Band (1+0)
+2. E-Band (XPIC 2+0) : Using XPIC (but not implemented yet, it basically just multiply by two the capacity)
+3. E-Band + MW (2+0) : Suggestions of dual carrier links using a combination of an E-band link and a 18 or 23 GHz link
+4. MW (1+0)
+5. MW (XPIC 2+0)
+
+For single and cross-polar links, tables are designed as follows :
+
+> Model (Equipment+Frequency+Bandwidth+Modulation) | Total Capacity | Availability
+
+For E-band + MW links, tables are designed as follows :
+
+> E-Band Model | Microwave Model | E-Band Capacity | MW Capacity | Total Capacity | Availability (returns the minimal one)
+
 
 
