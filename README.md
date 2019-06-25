@@ -39,11 +39,12 @@ Returns a graph showing the expected link capacity according to the distance.
 
 >*The link capacity is calculated according to the highest modulation that can be use, relativly to it Rx threshold and the current Rx level.*
 
->*The Rx level / link budget is obtained calculating the sum of the free space loss, the attenuation caused by the rain (according to the specified availability), antenna gain (according to their diameters) and the maximum Tx Power (depending on the equipment specified)*
+The Rx level / link budget is obtained calculating the following sum 
+> Free space loss + The attenuation caused by the rain (according to the specified availability and the formula coming from the equation 33 of the ITU-R P 530 recommandation) + Antenna gain (according to their diameters) + the maximum Tx Power (depending on the equipment specified)*
 
 
 2. Availability / Distance
 
-Returns a graph showing 
+Returns a graph showing the evolution of the expected 
 
 
