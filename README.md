@@ -31,6 +31,16 @@ This is a dynamic form : it consists in selection field whose choices are dynami
 - Adaptative Modulation : Specify if the AM feature is activated or not
 > *Note : In the Ericsson form, this field replace the XPIC one*
 
+### Scenario Profil
+A scenario form must be filled in the 'Scenario' feature, in order to set those expected parameters :
+
+- Capacity : Corresponding to the expected CIR (Commited Information Rate)
+- Margin : Let the possibility to set an absolute margin for the CIR and the PIR
+- PIR (optionnal) :  Permit setting a second target capacity
+- Availability PIR : Must be set if the PIR field is filled 
+- Distance
+
+
 ## Graphs
 
 1. Capacity / Distance 
@@ -51,8 +61,10 @@ As the modulation is fixed, a target Rx threshold is set, that can be assume as 
 
 3. Capacity / Availability
 
-Returns a graph showing the maximum expected capacity according the availability.
+Returns a graph showing the maximum expected capacity according the availability, and for a specific distance.
 
 > Example : **{x = 99.993 % ; y = 1093 Mbps}** ==> *It means that the link can work for 99.993 % of the time using a 1093 Mbps throughput*
+
+> *Note : By clicking on the associated CheckBox in the 'Graphs' form, an additionnal text field will appear in order to set the Distance value*  
 
 
