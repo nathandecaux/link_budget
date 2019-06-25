@@ -25,11 +25,11 @@ This is a dynamic form : it consists in selection field whose choices are dynami
 - Equipment : Equipment series name
 - Frequency : Band designator
 - Modem Card (+ODU for Huawei) : Workin RF modem card name. 
-> * * Note : In the case of Huawei full outdoors equipment, the only possible choice is the equipment name itself
+> *Note : In the case of Huawei full outdoors equipment, the only possible choice is the equipment name itself*
 - Bandwidth : Working channel spacing
 - Reference modulation : The working modulation that will be use for the Availability / Distance graph, in order to fix the Rx Level threshold
 - Adaptative Modulation : Specify if the AM feature is activated or not
-> * * Note : In the Ericsson form, this field replace the XPIC one
+> *Note : In the Ericsson form, this field replace the XPIC one*
 
 
 
