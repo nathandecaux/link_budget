@@ -14,6 +14,8 @@ The link parameters are used in order to calculate the free space loss + the att
 - Polar : Selection field to set the antenna polarization
 - Availability : Text field waiting for a float value to set the expected availability in % / year for the Capacity / Distance graph
 - Site Location : Text field waiting for an address (complete or not). A  geocode of this address is get by requesting the [OpenStreetMap API](https://nominatim.openstreetmap.org). Then, a approximate rainrate (mm/h for 0.01% of a year) is processed using those coordinates and the ITU-R P 837 recommandations
+- Rainrate : In case of offline using / unavailability of the OpenStreetMap API, the rainrate can be directly specified in this field
+
 
 ## Graphs
 
