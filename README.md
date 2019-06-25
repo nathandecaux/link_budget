@@ -21,7 +21,7 @@ The equipment should be specified in order to get received level thresholds that
 
 This is a dynamic form : it consists in selection field whose choices are dynamically set according to previous selected values. Choices are then updated using the equipment database.
 
-- XPIC : Not implemented yet, but need a 'Yes' or 'No' choice
+- XPIC : Not implemented yet, but need a 'Yes' or 'No' choice anyway
 - Equipment : Equipment series name
 - Frequency : Band designator
 - Modem Card (+ODU for Huawei) : Workin RF modem card name. 
@@ -31,9 +31,7 @@ This is a dynamic form : it consists in selection field whose choices are dynami
 - Adaptative Modulation : Specify if the AM feature is activated or not
 > *Note : In the Ericsson form, this field replace the XPIC one*
 
-
-
 ## Graphs
 
-#### Capacity according to the distance 
-  >Specifying the link profil (Antenna diameters, tilt, geolocation/rainrate (0.01%/year), expected availability) and the equipment, returns a graph showing the expected link capacity according to the distance
+1. Capacity according to the distance 
+Specifying the link profil (Antenna diameters, tilt, geolocation/rainrate (0.01%/year), expected availability) and the equipment, returns a graph showing the expected link capacity according to the distance
