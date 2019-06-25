@@ -33,6 +33,10 @@ This is a dynamic form : it consists in selection field whose choices are dynami
 
 ## Graphs
 
-1. Capacity according to the distance 
+1. Capacity / Distance 
+Returns a graph showing the expected link capacity according to the distance. The link capacity is calculated according to the highest modulation that can be use, relativly to it Rx threshold and the current Rx level. 
 
-Specifying the link profil (Antenna diameters, tilt, geolocation/rainrate (0.01%/year), expected availability) and the equipment, returns a graph showing the expected link capacity according to the distance
+2. Availability / Distance
+
+
+
