@@ -68,6 +68,10 @@ Returns a graph showing the maximum expected capacity according the availability
 
 > *Note : By clicking on the associated CheckBox in the 'Graphs' form, an additionnal text field will appear in order to set the Distance value*  
 
+For each graph that is displayed, there's a small form aside that permit updating the initial plot line ( = Refresh button) or adding a new line ( = Add line button). 
+
+Graphs are powered by the Bokeh Library. Uses of the graph toolbar (such as Zoom by selection, etc.) are described in the [Bokeh User Guide](https://bokeh.pydata.org/en/latest/docs/user_guide/tools.html#built-in-tools)
+
 ## Scenario
 
 The scenario feature is a tool that will suggest a list of possibilies according to the link and some target capacities (CIR and optionnaly PIR) and related availabilities. After sending the form, the application will show several tables :
@@ -89,7 +93,7 @@ For E-band + MW links, tables are designed as follows :
 Note that in case of Ericsson equipment, an additionnal 'Modulation' column was necessary.
 If a PIR has been set up, each row from each table can be clicked to show an additionnal row. This additionnal shows the PIR configuration, using the same format as rows corresponding to the CIR configuration.
 
-> *To get to the PIR configuration, the algorithm will increase the modulation and until the PIR is reached, if possible. In the RTN 380AX product, the bandwidth could also been increased following some specific upshift rules
+> *To get to the PIR configuration, the algorithm will increase the modulation and until the PIR is reached, if possible. In the RTN 380AX product, the bandwidth could also been increased following some specific upshift rules*
 
 
 
