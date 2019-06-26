@@ -87,6 +87,11 @@ For E-band + MW links, tables are designed as follows :
 > E-Band Model | Microwave Model | E-Band Capacity | MW Capacity | Total Capacity | Availability (returns the smallest one)
 
 Note that in case of Ericsson equipment, an additionnal 'Modulation' column was necessary.
+If a PIR has been set up, each row from each table can be clicked to show an additionnal row. This additionnal shows the PIR configuration, using the same format as rows corresponding to the CIR configuration.
+
+> *To get to the PIR configuration, the algorithm will increase the modulation and until the PIR is reached, if possible. In the RTN 380AX product, the bandwidth could also been increased following some specific upshift rules
+
+
 
 
 
