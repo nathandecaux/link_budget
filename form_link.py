@@ -2,7 +2,6 @@ import socket
 
 from flask import Flask, render_template, flash,redirect,request,g
 from flask_bootstrap import Bootstrap
-from flask_appconfig import AppConfig
 from bokeh.server.server import Server,BaseServer
 from tornado.ioloop import IOLoop
 import bokeh.palettes as bkolor
@@ -40,7 +39,7 @@ import poubelle
 from make_graph import MakeGraph
 from make_graph_eric import MakeGraphE
 import requests
-from geolocation.main import GoogleMaps
+
 from flask_table import Table, Col
 
 global BKTHREAD
@@ -161,7 +160,7 @@ if __name__ == '__main__':
     app.config['SIJAX_JSON_URI'] = '/static/js/sijax/json2.js'
     flask_sijax.Sijax(app)
     Bootstrap(app)
-    GoogleMaps(app)
+
     app.config['SECRET_KEY'] = 'devkey'
 
 
@@ -746,17 +745,20 @@ if __name__ == '__main__':
             return port
 
         session_port = get_free_tcp_port()
+        addr = 'localhost'
+        if len(sys.argv) >1 : addr = sys.argv[1]
 
         def bk_worker():
             # Can't pass num_procs > 1 in this configuration. If you need to run multiple
             # processes, see e.g. flask_gunicorn_embed.py
-            server = Server({'/bkapp2': bkapp2},port=session_port,io_loop=IOLoop(), allow_websocket_origin=["192.168.179.155"])
+            
+            server = Server({'/bkapp2': bkapp2},port=session_port,io_loop=IOLoop(), allow_websocket_origin=[addr])
             server.start()
             server.io_loop.start()
 
         if form.is_submitted():
             Thread(target=bk_worker).start()
-            script = server_document('http://192.168.179.155:'+str(session_port)+'/bkapp2')
+            script = server_document('http://'+addr+':'+str(session_port)+'/bkapp2')
             return render_template('graphs.html',graph1=script,title='Graphs viewer')#,rrS=script,graph1=div,graph2=file_html(graph1,CDN,'plot1'),graph3=file_html(graph1,CDN,'plot1'),js_resources=js_resources,css_resources=css_resources)
             # return render_template('graphs.html', graph=html)
 
@@ -1154,7 +1156,7 @@ if __name__ == '__main__':
                     curr_dat = graph.plotMod(g1a,g1b, el, geoloc,
                                   rrS2.value,float(polarS2.value), p0, xpicS2.value, equipS2.value, float(freqS2.value), cardS2.value, float(bwS2.value), ref_mod, amS2.value)
                     graph2.line(curr_dat['x'],curr_dat['y'], color = next(colors),line_width=2)
-                    graph2.add_tools(HoverTool())
+                    #graph2.add_tools(HoverTool())
 
                 def xpicUp2(attr,old,new):
                     equipS2.options = list(cb0Ch(None,xpicS2.value))
@@ -1344,13 +1346,14 @@ if __name__ == '__main__':
             return port
 
         session_port = get_free_tcp_port()
-
+        addr = 'localhost'
+        if len(sys.argv) >1: addr = sys.argv[1]
 
         def bk_worker():
             # Can't pass num_procs > 1 in this configuration. If you need to run multiple
             # processes, see e.g. flask_gunicorn_embed.py
 
-            server = Server({'/bkapp': bkapp},port=session_port,io_loop=IOLoop(), allow_websocket_origin=["192.168.179.155"])
+            server = Server({'/bkapp': bkapp},port=session_port,io_loop=IOLoop(), allow_websocket_origin=[addr])
             server.start()
             server.io_loop.start()
             print('pouet'+str(server.port))
@@ -1359,7 +1362,7 @@ if __name__ == '__main__':
         if form.is_submitted():
             from threading import Thread
             Thread(target=bk_worker).start()
-            script = server_document('http://192.168.179.155:'+str(session_port)+'/bkapp')
+            script = server_document('http://'+addr+':'+str(session_port)+'/bkapp')
             return render_template('graphs.html',graph1=script,title='Graphs viewer')#,rrS=script,graph1=div,graph2=file_html(graph1,CDN,'plot1'),graph3=file_html(graph1,CDN,'plot1'),js_resources=js_resources,css_resources=css_resources)
             # return render_template('graphs.html', graph=html)
 

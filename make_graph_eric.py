@@ -1,6 +1,5 @@
 from flask import Flask, render_template, flash,redirect,request,g
 from flask_bootstrap import Bootstrap
-from flask_appconfig import AppConfig
 from flask_wtf import Form, RecaptchaField
 from wtforms import SelectField
 import flask_sijax
@@ -24,7 +23,7 @@ import webbrowser
 import pickle
 import poubelle
 import requests
-from geolocation.main import GoogleMaps
+
 
 
 
