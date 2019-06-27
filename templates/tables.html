@@ -30,6 +30,10 @@ $(function(){
 <script defer src="https://code.jquery.com/jquery-3.3.1.js"></script>
 <script defer src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
 <script defer src="https://cdn.datatables.net/1.10.19/js/dataTables.bootstrap4.min.js"></script>
+<script defer src="https://cdn.datatables.net/fixedheader/3.1.5/js/dataTables.fixedHeader.min.js"></script>
+<script defer src="https://cdn.datatables.net/responsive/2.2.3/js/dataTables.responsive.min.js"></script>
+<script defer src="https://cdn.datatables.net/responsive/2.2.3/js/responsive.bootstrap.min.js"></script>
+
 <script defer>
     $(document).ready(function() {
     $('#pouet').DataTable({"ordering": false,"filtering": false});
@@ -37,6 +41,7 @@ $(function(){
     $('#pouet3').DataTable({"ordering": false,"filtering": false});
     $('#pouet4').DataTable({"ordering": false,"filtering": false});
     $('#pouet5').DataTable({"ordering": false,"filtering": false});
+
      $('#pouet').on('click', 'tr', function ()
     {
         next = $(this).attr('id')+'p';
@@ -128,13 +133,11 @@ $(function(){
                 </button>
               </h5>
             </div>
-            <div id="collapse1" class="collapse show" aria-labelledby="heading1" data-parent="#accordionExample">
-                <div class="card-body">
-                    <div class="bootstrap-table">
+            <div id="collapse1" class="collapse show responsive" aria-labelledby="heading1" data-parent="#accordionExample">
+                <div class="card-body table-responsive">
                       {{
                         table|safe
                       }}
-                    </div>
                 </div>
             </div>
         </div>
@@ -150,7 +153,7 @@ $(function(){
             </div>
 
             <div id="collapse2" class="collapse show" aria-labelledby="heading2" data-parent="#accordionExample">
-                <div class="card-body">
+                <div class="card-body table-responsive">
                   {{
                     ex_tab|safe
                   }}
@@ -168,7 +171,7 @@ $(function(){
             </div>
 
             <div id="collapse3" class="collapse show" aria-labelledby="heading3" data-parent="#accordionExample">
-                <div class="card-body">
+                <div class="card-body table-responsive">
                   {{
                     e_mw_tab|safe
                   }}
@@ -186,7 +189,7 @@ $(function(){
             </div>
 
             <div id="collapse4" class="collapse show" aria-labelledby="heading4" data-parent="#accordionExample">
-                <div class="card-body">
+                <div class="card-body table-responsive">
                   {{
                     mw_stab|safe
                   }}
@@ -204,7 +207,7 @@ $(function(){
             </div>
 
             <div id="collapse5" class="collapse show" aria-labelledby="heading5" data-parent="#accordionExample">
-                <div class="card-body">
+                <div class="card-body table-responsive">
                   {{
                     mw_xtab|safe
                   }}

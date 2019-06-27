@@ -239,16 +239,15 @@ def getScenarii(test,CIR,AVAILABILITY):
             mw_items.append(SingleItem(met,pro[0], pro[-3] * 2, pro[-1]))
             outstr = outstr + str(pro[0]) + ' -- ' + str(pro[-3]*2) + ' Mbps -- ' + str(
                 pro[-1]) + '%\n'
-    eb_stab = SingleTable(e_band_sitems, classes=['table table-striped table-bordered'],
-                          html_attrs={'data-sortable': "true"})
+    eb_stab = SingleTable(e_band_sitems, classes=['table table-striped table-bordered'], html_attrs={'width':"100%"})
     eb_stab.table_id = "pouet"
-    ex_tab = SingleTable(e_xpic_items, classes=['table table-striped table-bordered'])
+    ex_tab = SingleTable(e_xpic_items, classes=['table table-striped table-bordered'], html_attrs={'width':"100%"})
     ex_tab.table_id = "pouet2"
-    e_mw_tab = DualTable(e_mw_ditems, classes=['table table-striped table-bordered'])
+    e_mw_tab = DualTable(e_mw_ditems, classes=['table table-striped table-bordered'], html_attrs={'width':"100%"})
     e_mw_tab.table_id = "pouet3"
-    mw_stab = SingleTable(mw_sitems, classes=['table table-striped table-bordered'])
+    mw_stab = SingleTable(mw_sitems, classes=['table table-striped table-bordered'], html_attrs={'width':"100%"})
     mw_stab.table_id = "pouet4"
-    mw_xtab = SingleTable(mw_items, classes=['table table-striped table-bordered'])
+    mw_xtab = SingleTable(mw_items, classes=['table table-striped table-bordered'], html_attrs={'width':"100%"})
     mw_xtab.table_id = "pouet5"
     if test==0 and PIR != 0:
         test=2
@@ -315,15 +314,15 @@ def getScenariiPIR(goodCIR):
             (pro, leg) = b
             e_mw_ditems.append(DualItem(str(i)+'ep', pro[0], leg[0], pro[-3], leg[-3], pro[-3] + leg[-3], np.minimum(pro[-1],leg[-1])))
 
-    eb_stab = SingleTable(e_band_sitems, classes=['table table-striped table-bordered'],html_attrs={'data-sortable':"true"})
+    eb_stab = SingleTable(e_band_sitems, classes=['table table-striped table-bordered'], html_attrs={'width':"100%"})
     eb_stab.table_id="pouet"
-    ex_tab = SingleTable(e_xpic_items, classes=['table table-striped table-bordered'])
+    ex_tab = SingleTable(e_xpic_items, classes=['table table-striped table-bordered'], html_attrs={'width':"100%"})
     ex_tab.table_id="pouet2"
-    e_mw_tab = DualTable(e_mw_ditems, classes=['table table-striped table-bordered'])
+    e_mw_tab = DualTable(e_mw_ditems, classes=['table table-striped table-bordered'], html_attrs={'width':"100%"})
     e_mw_tab.table_id="pouet3"
-    mw_stab = SingleTable(mw_sitems, classes=['table table-striped table-bordered'])
+    mw_stab = SingleTable(mw_sitems, classes=['table table-striped table-bordered'], html_attrs={'width':"100%"})
     mw_stab.table_id="pouet4"
-    mw_xtab = SingleTable(mw_items, classes=['table table-striped table-bordered'])
+    mw_xtab = SingleTable(mw_items, classes=['table table-striped table-bordered'], html_attrs={'width':"100%"})
     mw_xtab.table_id="pouet5"
     return ([eb_stab.__html__(), ex_tab.__html__(), e_mw_tab.__html__(), mw_stab.__html__(), mw_xtab.__html__()])
 

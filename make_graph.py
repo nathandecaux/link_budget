@@ -202,8 +202,8 @@ class MakeGraph():
     def plotMod(self,g1a,g1b,el,geoloc,rr,tau,p0,xpic,equip,freq,card,bw,ref_mod,am):
         d = np.arange(0.01, 20, 0.01)
         self.update(g1a, g1b, el, geoloc, rr, tau, p0, xpic, equip, freq, card, bw, ref_mod, am)
-        infosl = {'gainA':g1a,'gainB':g1b,'rain':np.round(rr,1),'polar':tau,'avail':np.round(100-p0,5)}
-        infose = {'xpic':xpic,'equip':equip,'freq':freq,'card':card,'bw':bw,'ref_mod':ref_mod,'am':am}
+        #infosl = dict(gainA=np.full(1999,g1a),gainB=np.full(1999,g1b),rain=np.full(1999,np.round(rr,1)),polar=np.full(1999,tau),avail=np.full(1999,np.round(100-p0,5)))
+        #infose = {'xpic':np.full(1999,xpic),'equip':np.full(1999,equip),'freq':np.full(1999,freq),'card':np.full(1999,card),'bw':np.full(1999,bw),'ref_mod':np.full(1999,ref_mod),'am':np.full(1999,am)}
 
         p=plt.figure(title='Capacity according to the distance',x_axis_label = 'Distance (km)',y_axis_label = 'Capacity (Mbps)')
 
@@ -235,8 +235,9 @@ class MakeGraph():
                     capa = capa_mod[lab]
                     match=True
             capaline.append(float(capa)) if match else capaline.append(0)
-
-        return dict(x=d,y=capaline,infl=np.full(1999,infosl.__str__()),infe=np.full(1999,infose.__str__()))
+        dico = dict(x=d,y=capaline)
+       # dico = dict(list(dico.items()) + list(infosl.items()) + list(infose.items()))
+        return dico #infl=np.full(1999,infosl.__str__()),infe=np.full(1999,infose.__str__()))
 
     def plotAvail(self,g1a,g1b,el,geoloc,rr,tau,p0,xpic,equip,freq,card,bw,ref_mod,am):
         d = np.arange(0.01, 20, 0.01)

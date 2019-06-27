@@ -136,9 +136,9 @@ def getProb(profs,d,p,rr,xpic=False):
         GAIN2 = getAntGain(DIA2,prof[2])
         wl = float(scipy.constants.speed_of_light / (prof[2] * (10 ** 9)))
         att= prof[3] + GAIN1 + GAIN2 - float(prof[-1]) - 20 * np.log10((4 * pi * d * 1000) / wl)
-        if xpic:
+        if xpic and prof[2]>0.0:
             proba = 100 - itur.models.itu530.inverse_rain_attenuation(GEOLOCATE[0], GEOLOCATE[1], d, prof[2],ELEVATION, att, 0, rr).value
-        else:
+        elif not xpic and prof[2]>0.0:
             proba = 100 - itur.models.itu530.inverse_rain_attenuation(GEOLOCATE[0],GEOLOCATE[1],d,prof[2],ELEVATION,att,POLAR,rr).value
         if proba > p:
             prof.append(proba)
@@ -174,6 +174,7 @@ def getScenarii(test,CIR,AVAILABILITY):
         if prof[2]==80.0:
             i = i+1
             met = str(i)
+            goodCIR['eband'].append(prof)
             e_band_sitems.append(SingleItem(met,prof[0],prof[1],prof[-3],prof[-1]))
             outstr=outstr+str(prof[0])+' -- '+str(prof[-3])+' Mbps -- '+str(prof[-1])+'%\n'
     outstr=outstr+'---- eBand (XPIC 2+0) ----\n'
@@ -227,16 +228,15 @@ def getScenarii(test,CIR,AVAILABILITY):
             mw_items.append(SingleItem(met,pro[0],pro[1], str(int(pro[-3])*2), pro[-1]))
             outstr = outstr + str(pro[0]) + ' -- ' +str(int(pro[-3])*2) + ' Mbps -- ' + str(
                 pro[-1]) + '%\n'
-    eb_stab = SingleTable(e_band_sitems, classes=['table table-striped table-bordered'],
-                          html_attrs={'data-sortable': "true"})
+    eb_stab = SingleTable(e_band_sitems, classes=['table table-striped table-bordered'],html_attrs={'width':"100%"})
     eb_stab.table_id = "pouet"
-    ex_tab = SingleTable(e_xpic_items, classes=['table table-striped table-bordered'])
+    ex_tab = SingleTable(e_xpic_items, classes=['table table-striped table-bordered'], html_attrs={'width':"100%"})
     ex_tab.table_id = "pouet2"
-    e_mw_tab = DualTable(e_mw_ditems, classes=['table table-striped table-bordered'])
+    e_mw_tab = DualTable(e_mw_ditems, classes=['table table-striped table-bordered table-responsive'], html_attrs={'width':"100%"})
     e_mw_tab.table_id = "pouet3"
-    mw_stab = SingleTable(mw_sitems, classes=['table table-striped table-bordered'])
+    mw_stab = SingleTable(mw_sitems, classes=['table table-striped table-bordered'], html_attrs={'width':"100%"})
     mw_stab.table_id = "pouet4"
-    mw_xtab = SingleTable(mw_items, classes=['table table-striped table-bordered'])
+    mw_xtab = SingleTable(mw_items, classes=['table table-striped table-bordered'], html_attrs={'width':"100%"})
     mw_xtab.table_id = "pouet5"
     if test==0 and PIR != 0:
         test=2
@@ -254,6 +254,7 @@ def getScenariiPIR(goodCIR):
     final = dict()
     cur = []
     cur.append('pouet')
+
     for key in goodPIR.keys():
         cur = []
         for valP in goodPIR[str(key)]:
@@ -280,8 +281,8 @@ def getScenariiPIR(goodCIR):
     if final.__contains__('ebandx'):
         for pro in final['ebandx']:
             i = i + 1
-            e_xpic_items.append(SingleItem(str(i) + 'b', pro[0][0],pro[0][1], str(int(pro[0][-3] * 2)), pro[0][-1]))
-            e_xpic_items.append(SingleItem(str(i) + 'bp', pro[1][0],pro[1][1], str(int(pro[1][-3] * 2)), pro[1][-1]))
+            e_xpic_items.append(SingleItem(str(i) + 'b', pro[0][0],pro[0][1], str(int(pro[0][-3]) * 2), pro[0][-1]))
+            e_xpic_items.append(SingleItem(str(i) + 'bp', pro[1][0],pro[1][1], str(int(pro[1][-3]) * 2), pro[1][-1]))
     i = 0
     if final.__contains__('mw'):
         for prof in final['mw']:
@@ -292,8 +293,8 @@ def getScenariiPIR(goodCIR):
     if final.__contains__('mwx'):
         for pro in final['mwx']:
             i = i + 1
-            mw_items.append(SingleItem(str(i) + 'd', pro[0][0], str(int(pro[0][-3] * 2)), pro[0][-1]))
-            mw_items.append(SingleItem(str(i) + 'dp', pro[1][0],prof[1][1], str(int(pro[1][-3] * 2)), pro[1][-1]))
+            mw_items.append(SingleItem(str(i) + 'd', pro[0][0], pro[0][1],str(int(pro[0][-3]) * 2), pro[0][-1]))
+            mw_items.append(SingleItem(str(i) + 'dp', pro[1][0],pro[1][1], str(int(pro[1][-3]) * 2), pro[1][-1]))
 
     if final.__contains__('multi'):
         for (a, b) in final['multi']:
@@ -308,15 +309,15 @@ def getScenariiPIR(goodCIR):
                                         np.minimum(pro[-1], leg[-1])))
 
     eb_stab = SingleTable(e_band_sitems, classes=['table table-striped table-bordered'],
-                          html_attrs={'data-sortable': "true"})
+                          html_attrs={'width':"100%"})
     eb_stab.table_id = "pouet"
-    ex_tab = SingleTable(e_xpic_items, classes=['table table-striped table-bordered'])
+    ex_tab = SingleTable(e_xpic_items, classes=['table table-striped table-bordered'], html_attrs={'width':"100%"})
     ex_tab.table_id = "pouet2"
-    e_mw_tab = DualTable(e_mw_ditems, classes=['table table-striped table-bordered'])
+    e_mw_tab = DualTable(e_mw_ditems, classes=['table table-striped table-bordered'], html_attrs={'width':"100%"})
     e_mw_tab.table_id = "pouet3"
-    mw_stab = SingleTable(mw_sitems, classes=['table table-striped table-bordered'])
+    mw_stab = SingleTable(mw_sitems, classes=['table table-striped table-bordered'], html_attrs={'width':"100%"})
     mw_stab.table_id = "pouet4"
-    mw_xtab = SingleTable(mw_items, classes=['table table-striped table-bordered'])
+    mw_xtab = SingleTable(mw_items, classes=['table table-striped table-bordered'], html_attrs={'width':"100%"})
     mw_xtab.table_id = "pouet5"
     return ([eb_stab.__html__(), ex_tab.__html__(), e_mw_tab.__html__(), mw_stab.__html__(), mw_xtab.__html__()])
 

@@ -5,6 +5,8 @@ from flask_bootstrap import Bootstrap
 from bokeh.server.server import Server,BaseServer
 from tornado.ioloop import IOLoop
 import bokeh.palettes as bkolor
+from bokeh import events
+
 import itertools
 from flask_wtf import Form, RecaptchaField
 from wtforms import SelectField
@@ -17,7 +19,7 @@ from wtforms.validators import Required
 import bokeh.plotting as plt
 from bokeh.resources import INLINE
 from bokeh.util.browser import view
-from bokeh.models import Plot,Tool,HoverTool,Slider,WidgetBox,Button,Select,TextInput,Spinner,Legend,LegendItem,Div,Markup
+from bokeh.models import Plot,Tool,HoverTool,Slider,WidgetBox,Button,Select,TextInput,Spinner,Legend,LegendItem,Div,Markup,CustomJS,Line
 from bokeh.resources import CDN
 from bokeh.embed import file_html,components,server_document
 import scipy.constants
@@ -428,31 +430,79 @@ if __name__ == '__main__':
                 widgets2.append(bwS)
                 buttons.append(add_button2)
 
+                TOOLTIPS = [
+                    ("Capacity", "@y"),
+                    ("Availability", "@x"),
+                    ("Gain A", str(g1a)),
+                    ("Gain B", str(g1b)),
+                    ("Rainrate", str(rr)),
+                    ("Polar", str(tau)),
+                    ("Distance", str(form.mf.dist.data)),
+                    ("Equip", str(equip)),
+                    ('Freq', str(freq)),
+                    ('Card', str(card)),
+                    ('Bandwidth', str(bw)),
+                ]
+
                 colors = itertools.cycle(bkolor.Category10_10)
-                source2 = plt.ColumnDataSource(
-                    data=graph.plotRain(g1a, g1b, el, geoloc, rr, tau, p0, xpic, equip, freq, card, bw, ref_mod,dist))
+                source1 = plt.ColumnDataSource(
+                    data=graph.plotRain(g1a, g1b, el, geoloc, rr, tau, p0, xpic, equip, freq, card, bw, ref_mod,
+                                        dist))
 
                 graph1 = plt.figure(title='Capacity according to the availability',
                                     x_axis_label='Availability (%)', y_axis_label='Capacity (Mbps)')
-                graph1.line('x', 'y', source=source2, color=next(colors), line_width=2)
+                init_line = Line(x='x', y='y', line_color=next(colors), line_width=2)
+                graph1.add_glyph(source1, init_line)
+                graph1.add_tools(HoverTool(tooltips=TOOLTIPS))
 
                 def update_data(event):
                     g1a = float(poubelle.getAntGain(float(g1aS.value.__str__()), freq))
                     g1b = float(poubelle.getAntGain(float(g1bS.value.__str__()), freq))
-
-                    source2.data = plt.ColumnDataSource(
+                    graph1.renderers = []
+                    TOOLTIPS = [
+                        ("Capacity", "@y"),
+                        ("Availability", "@x"),
+                        ("Gain A", str(g1a)),
+                        ("Gain B", str(g1b)),
+                        ("Rainrate", str(rrS.value)),
+                        ("Polar", str(polarS.value)),
+                        ("Distance", str(dS.value)),
+                        ("Equip", str(equipS.value)),
+                        ('Freq', str(freqS.value)),
+                        ('Card', str(cardS.value)),
+                        ('Bandwidth', str(bwS.value))
+                    ]
+                    source1.data = plt.ColumnDataSource(
                         data=graph.plotRain(g1a, g1b, el, geoloc,
-                                           rrS.value, float(polarS.value), p0, xpicS.value, equipS.value,
-                                           float(freqS.value), cardS.value, float(bwS.value), ref_mod,dS.value)).data
+                                            rrS.value, float(polarS.value), p0, xpicS.value, equipS.value,
+                                            float(freqS.value), cardS.value, float(bwS.value), ref_mod,
+                                            dS.value)).data
+                    graph1.add_glyph(source1, init_line)
+                    graph1.add_tools(HoverTool(tooltips=TOOLTIPS))
 
                 def add_data(event):
                     g1a = float(poubelle.getAntGain(float(g1aS.value.__str__()), freq))
                     g1b = float(poubelle.getAntGain(float(g1bS.value.__str__()), freq))
-                    curr_dat = graph.plotRain(g1a, g1b, el, geoloc,
-                                             rrS.value, float(polarS.value), p0, xpicS.value, equipS.value,
-                                             float(freqS.value), cardS.value, float(bwS.value), ref_mod,dS.value)
-                    graph1.line(curr_dat['x'], curr_dat['y'], color=next(colors), line_width=2)
-                    graph1.add_tools(HoverTool())
+                    curr_dat = plt.ColumnDataSource(data=graph.plotRain(g1a, g1b, el, geoloc,
+                                                                        rrS.value, float(polarS.value), p0, xpicS.value,
+                                                                        equipS.value,
+                                                                        float(freqS.value), cardS.value,
+                                                                        float(bwS.value), ref_mod, dS.value))
+                    truc = Line(x='x', y='y', line_color=next(colors), line_width=2)
+                    graph1.add_glyph(curr_dat, truc)
+                    graph1.add_tools(HoverTool(tooltips=[
+                        ("Capacity", "@y"),
+                        ("Availability", "@x"),
+                        ("Gain A", str(g1a)),
+                        ("Gain B", str(g1b)),
+                        ("Rainrate", str(rrS.value)),
+                        ("Polar", str(polarS.value)),
+                        ("Distance", str(dS.value)),
+                        ("Equip", str(equipS.value)),
+                        ('Freq', str(freqS.value)),
+                        ('Card', str(cardS.value)),
+                        ('Bandwidth', str(bwS.value))
+                    ]))
 
                 def xpicUp(attr, old, new):
                     equipS.options = list(cb0Ch(None, xpicS.value))
@@ -485,7 +535,6 @@ if __name__ == '__main__':
                             new = new[0]
                         bwS.value = new
 
-                # graph2.add_tools(HoverTool())
                 graph1.css_classes = ["container"]
                 refresh_button2.on_click(handler=update_data)
                 add_button2.on_click(handler=add_data)
@@ -534,35 +583,80 @@ if __name__ == '__main__':
                 colors = itertools.cycle(bkolor.Category10_10)
                 source2 = plt.ColumnDataSource(
                     data=graph.plotMod(g1a, g1b, el, geoloc, rr, tau, p0, xpic, equip, freq, card, bw, ref_mod))
-                #source2.data['freq']=np.full(1999,freq)
+                # source2.data['freq']=np.full(1999,freq)
                 TOOLTIPS = [
                     ("Capacity", "@y"),
                     ("Distance", "@x"),
-                    ("Link", "@infl"),
-                    ("Equip","@infe")
+                    ("Gain A", str(g1a)),
+                    ("Gain B", str(g1b)),
+                    ("Rainrate", str(rr)),
+                    ("Polar", str(tau)),
+                    ("Availability", str(link.p_entry.data)),
+                    ("Equip", str(equip)),
+                    ('Freq', str(freq)),
+                    ('Card', str(card)),
+                    ('Bandwidth', str(bw)),
+                    ("AM :", str(xpic))
                 ]
                 graph2 = plt.figure(title='Capacity according to the distance',
-                                    x_axis_label='Distance (km)', y_axis_label='Capacity (Mbps)',tooltips=TOOLTIPS,sizing_mode='scale_both')
-                graph2.line('x', 'y', source=source2,color=next(colors),line_width=2)
-                def update_data2(event):
+                                    x_axis_label='Distance (km)', y_axis_label='Capacity (Mbps)',
+                                    sizing_mode='scale_both')
 
-                    p0 = np.round(100.0 - float(pS2.value),5)
+                init_line2 = Line(x='x', y='y', line_color=next(colors), line_width=2)
+                graph2.add_glyph(source2, init_line2)
+                graph2.add_tools(HoverTool(tooltips=TOOLTIPS))
+
+                def update_data2(event):
+                    p0 = np.round(100.0 - float(pS2.value), 5)
                     g1a = float(poubelle.getAntGain(float(g1as2.value.__str__()), freq))
                     g1b = float(poubelle.getAntGain(float(g1bS2.value.__str__()), freq))
-            
+                    graph2.hover.clear()
+                    graph2.renderers = []
+                    TOOLTIPS = [
+                        ("Capacity", "@y"),
+                        ("Distance", "@x"),
+                        ("Gain A", str(g1a)),
+                        ("Gain B", str(g1b)),
+                        ("Rainrate", str(rrS2.value)),
+                        ("Polar", str(polarS2.value)),
+                        ("Availability", str(pS2.value)),
+                        ("Equip", str(equipS2.value)),
+                        ('Freq', str(freqS2.value)),
+                        ('Card', str(cardS2.value)),
+                        ('Bandwidth', str(bwS2.value)),
+                        ("AM :", str(xpicS2.value))]
                     source2.data = plt.ColumnDataSource(
-                        data=graph.plotMod(g1a,g1b, el, geoloc,
-                                  rrS2.value,float(polarS2.value), p0,xpicS2.value, equipS2.value, float(freqS2.value), cardS2.value, float(bwS2.value), ref_mod)).data
-
+                        data=graph.plotMod(g1a, g1b, el, geoloc,
+                                           rrS2.value, float(polarS2.value), p0, xpicS2.value, equipS2.value,
+                                           float(freqS2.value), cardS2.value, float(bwS2.value), ref_mod
+                                           )).data
+                    graph2.add_glyph(source2, init_line2)
+                    graph2.add_tools(HoverTool(tooltips=TOOLTIPS))
 
                 def add_data2(event):
                     p0 = 100.0 - float(pS2.value)
                     g1a = float(poubelle.getAntGain(float(g1as2.value.__str__()), freq))
                     g1b =float(poubelle.getAntGain(float(g1bS2.value.__str__()), freq))
-                    curr_dat = graph.plotMod(g1a,g1b, el, geoloc,
-                                  rrS2.value,float(polarS2.value), p0, xpicS2.value, equipS2.value, float(freqS2.value), cardS2.value, float(bwS2.value), ref_mod)
-                    graph2.line(curr_dat['x'],curr_dat['y'], color = next(colors),line_width=2)
-                    graph2.add_tools(HoverTool())
+                    curr_dat = plt.ColumnDataSource(data=graph.plotMod(g1a, g1b, el, geoloc,
+                                                                       rrS2.value, float(polarS2.value), p0,
+                                                                       xpicS2.value, equipS2.value, float(freqS2.value),
+                                                                       cardS2.value, float(bwS2.value), ref_mod
+                                                                       ))
+                    truc = Line(x='x', y='y', line_color=next(colors), line_width=2, subscribed_events=["tap"])
+                    graph2.add_glyph(curr_dat, truc)
+                    graph2.add_tools(HoverTool(tooltips=[
+                        ("Capacity", "@y"),
+                        ("Distance", "@x"),
+                        ("Gain A", str(g1a)),
+                        ("Gain B", str(g1b)),
+                        ("Rainrate", str(rrS2.value)),
+                        ("Polar", str(polarS2.value)),
+                        ("Availability", str(pS2.value)),
+                        ("Equip", str(equipS2.value)),
+                        ('Freq', str(freqS2.value)),
+                        ('Card', str(cardS2.value)),
+                        ('Bandwidth', str(bwS2.value)),
+                        ("AM :", str(xpicS2.value))]))
 
                 def xpicUp2(attr,old,new):
                     equipS2.options = list(cb0Ch(None,xpicS2.value))
@@ -621,7 +715,7 @@ if __name__ == '__main__':
                 buttons = list()
                 lines = list()
                 g1aS3 = Select(title="Antenna Diameter A (m)", value=str(d1a), options=link.gae.choices)
-                g1bS23 = Select(title="Antenna Diameter B (m)", value=str(d1b), options=link.gae.choices)
+                g1bS3 = Select(title="Antenna Diameter B (m)", value=str(d1b), options=link.gae.choices)
                 polarS3 = Select(title="Polarization", value=str(link.polar.data), options=link.polar.choices)
                 # elS2 = Slider(title="Elevation (degrees)", value=float(el), start=0, end=45, step=10)
                 rrS3 = Slider(title="Rainrate (mm/h)", value=float(rr), start=0, end=110, step=1)
@@ -629,7 +723,7 @@ if __name__ == '__main__':
                 add_button3 = Button(label='Add Line')
                 refresh_button3 = Button(label='Refresh')
                 widgets.append(g1aS3)
-                widgets.append(g1bS23)
+                widgets.append(g1bS3)
                 widgets.append(polarS3)
                 widgets.append(rrS3)
                 buttons.append(refresh_button3)
@@ -647,38 +741,84 @@ if __name__ == '__main__':
                 widgets2.append(bwS3)
                 widgets2.append(refS3)
                 buttons.append(add_button3)
-
+                TOOLTIPS = [
+                    ("Capacity", "@y"),
+                    ("Distance", "@x"),
+                    ("Gain A", str(g1a)),
+                    ("Gain B", str(g1b)),
+                    ("Rainrate", str(rr)),
+                    ("Polar", str(tau)),
+                    ('Modulation', str(ref_mod)),
+                    ("Equip", str(equip)),
+                    ('Freq', str(freq)),
+                    ('Card', str(card)),
+                    ('Bandwidth', str(bw)),
+                    ("AM :", str(xpic))
+                ]
                 colors3 = itertools.cycle(bkolor.Category10_10)
                 source3 = plt.ColumnDataSource(
                     data=graph.plotAvail(g1a, g1b, el, geoloc, rr, tau, p0, xpic, equip, freq, card, bw, ref_mod))
-                graph3 = plt.figure(title='Availability according to the distance',
-                                    x_axis_label='Distance (km)', y_axis_label='Availability (%)',)
-                l = graph3.line('x', 'y', source=source3, color=next(colors3),line_width=2)
-                lines.append((str(rr),[l]))
+                graph3 = plt.figure(title='Capacity according to the distance',
+                                    x_axis_label='Distance (km)', y_axis_label='Capacity (Mbps)',
+                                    sizing_mode='scale_both')
+                init_line3 = Line(x='x', y='y', line_color=next(colors3), line_width=2)
+                graph3.add_glyph(source3, init_line3)
+                graph3.add_tools(HoverTool(tooltips=TOOLTIPS))
+
+                # lines.append((str(rr),[l]))
                 # graph3.plot_width = 1000
                 # graph3.plot_height = 800
                 def update_data3(event):
+                    graph3.renderers = []
                     g1a = float(poubelle.getAntGain(float(g1aS3.value.__str__()), freq))
-                    g1b = float(poubelle.getAntGain(float(g1bS23.value.__str__()), freq))
+                    g1b = float(poubelle.getAntGain(float(g1bS3.value.__str__()), freq))
                     # truc = [g1a,g1b,p0,rrS2.value,float(polarS.value),xpicS.value, equipS.value, float(freqS.value), cardS.value, float(bwS.value), ref_mod, amS.value]
                     # print(truc)
                     # plotAvail(self,g1a,g1b,el,geoloc,rr,tau,p0,xpic,equip,freq,card,bw,ref_mod,am)
 
                     source3.data = plt.ColumnDataSource(
                         data=graph.plotAvail(g1a, g1b, el, geoloc,
-                                           rrS3.value, float(polarS3.value), p0, xpicS3.value, equipS3.value,
-                                           float(freqS3.value), cardS3.value, float(bwS3.value), refS3.value)).data
+                                             rrS3.value, float(polarS3.value), p0, xpicS3.value, equipS3.value,
+                                             float(freqS3.value), cardS3.value, float(bwS3.value), refS3.value
+                                             )).data
+                    graph3.add_glyph(source3, init_line3)
+                    graph3.add_tools(HoverTool(tooltips=[
+                        ("Capacity", "@y"),
+                        ("Distance", "@x"),
+                        ("Gain A", str(g1a)),
+                        ("Gain B", str(g1b)),
+                        ("Rainrate", str(rrS3.value)),
+                        ("Polar", str(polarS3.value)),
+                        ("Modulation", str(refS3.value)),
+                        ("Equip", str(equipS3.value)),
+                        ('Freq', str(freqS3.value)),
+                        ('Card', str(cardS3.value)),
+                        ('Bandwidth', str(bwS3.value)),
+                        ("AM :", str(xpicS3.value))]))
 
                 def add_data3(event):
                     g1a = float(poubelle.getAntGain(float(g1aS3.value.__str__()), freq))
-                    g1b = float(poubelle.getAntGain(float(g1bS23.value.__str__()), freq))
-                    curr_dat = graph.plotAvail(g1a, g1b, el, geoloc,
-                                             rrS3.value, float(polarS3.value), p0, xpicS3.value, equipS3.value,
-                                             float(freqS3.value), cardS3.value, float(bwS3.value), refS3.value)
-                    l = graph3.line(curr_dat['x'], curr_dat['y'], color=next(colors3),line_width=2)
-                    graph3.add_tools(HoverTool())
-                    lines.append((str(rrS3.value), [l]))
-                    legend.items = lines
+                    g1b = float(poubelle.getAntGain(float(g1bS3.value.__str__()), freq))
+                    curr_dat = plt.ColumnDataSource(graph.plotAvail(g1a, g1b, el, geoloc,
+                                                                    rrS3.value, float(polarS3.value), p0, xpicS3.value,
+                                                                    equipS3.value,
+                                                                    float(freqS3.value), cardS3.value,
+                                                                    float(bwS3.value), refS3.value))
+                    truc = Line(x='x', y='y', line_color=next(colors3), line_width=2)
+                    graph3.add_glyph(curr_dat, truc)
+                    graph3.add_tools(HoverTool(tooltips=[
+                        ("Capacity", "@y"),
+                        ("Distance", "@x"),
+                        ("Gain A", str(g1a)),
+                        ("Gain B", str(g1b)),
+                        ("Rainrate", str(rrS3.value)),
+                        ("Polar", str(polarS3.value)),
+                        ("Modulation", str(refS3.value)),
+                        ("Equip", str(equipS3.value)),
+                        ('Freq', str(freqS3.value)),
+                        ('Card', str(cardS3.value)),
+                        ('Bandwidth', str(bwS3.value)),
+                        ("AM :", str(xpicS3.value))]))
 
                 def xpicUp3(attr, old, new):
                     equipS3.options = list(cb0Ch(None, xpicS3.value))
@@ -719,7 +859,6 @@ if __name__ == '__main__':
                         refS3.value = new
 
                 legend = Legend(items=lines)
-                graph3.add_tools(HoverTool())
                 graph3.css_classes = ["container"]
                 refresh_button3.on_click(handler=update_data3)
                 add_button3.on_click(handler=add_data3)
@@ -1014,32 +1153,75 @@ if __name__ == '__main__':
                 widgets2.append(cardS)
                 widgets2.append(bwS)
                 buttons.append(add_button2)
+                TOOLTIPS = [
+                    ("Capacity", "@y"),
+                    ("Availability", "@x"),
+                    ("Gain A", str(g1a)),
+                    ("Gain B", str(g1b)),
+                    ("Rainrate", str(rr)),
+                    ("Polar", str(tau)),
+                    ("Distance", str(form.mf.dist.data)),
+                    ("Equip", str(equip)),
+                    ('Freq', str(freq)),
+                    ('Card', str(card)),
+                    ('Bandwidth', str(bw)),
+                ]
 
                 colors = itertools.cycle(bkolor.Category10_10)
-                source2 = plt.ColumnDataSource(
+                source1 = plt.ColumnDataSource(
                     data=graph.plotRain(g1a, g1b, el, geoloc, rr, tau, p0, xpic, equip, freq, card, bw, ref_mod,am,dist))
 
                 graph1 = plt.figure(title='Capacity according to the availability',
                                     x_axis_label='Availability (%)', y_axis_label='Capacity (Mbps)')
-                graph1.line('x', 'y', source=source2, color=next(colors), line_width=2)
+                init_line = Line(x='x', y='y', line_color=next(colors), line_width=2)
+                graph1.add_glyph(source1,init_line)
+                graph1.add_tools(HoverTool(tooltips=TOOLTIPS))
 
                 def update_data(event):
                     g1a = float(poubelle.getAntGain(float(g1aS.value.__str__()), freq))
                     g1b = float(poubelle.getAntGain(float(g1bS.value.__str__()), freq))
-
-                    source2.data = plt.ColumnDataSource(
+                    graph1.renderers=[]
+                    TOOLTIPS = [
+                        ("Capacity", "@y"),
+                        ("Availability", "@x"),
+                        ("Gain A", str(g1a)),
+                        ("Gain B", str(g1b)),
+                        ("Rainrate", str(rrS.value)),
+                        ("Polar", str(polarS.value)),
+                        ("Distance", str(dS.value)),
+                        ("Equip", str(equipS.value)),
+                        ('Freq', str(freqS.value)),
+                        ('Card', str(cardS.value)),
+                        ('Bandwidth', str(bwS.value))
+                        ]
+                    source1.data = plt.ColumnDataSource(
                         data=graph.plotRain(g1a, g1b, el, geoloc,
                                            rrS.value, float(polarS.value), p0, xpicS.value, equipS.value,
                                            float(freqS.value), cardS.value, float(bwS.value), ref_mod,am,dS.value)).data
+                    graph1.add_glyph(source1,init_line)
+                    graph1.add_tools(HoverTool(tooltips=TOOLTIPS))
 
                 def add_data(event):
                     g1a = float(poubelle.getAntGain(float(g1aS.value.__str__()), freq))
                     g1b = float(poubelle.getAntGain(float(g1bS.value.__str__()), freq))
-                    curr_dat = graph.plotRain(g1a, g1b, el, geoloc,
+                    curr_dat = plt.ColumnDataSource(data=graph.plotRain(g1a, g1b, el, geoloc,
                                              rrS.value, float(polarS.value), p0, xpicS.value, equipS.value,
-                                             float(freqS.value), cardS.value, float(bwS.value), ref_mod,am,dS.value)
-                    graph1.line(curr_dat['x'], curr_dat['y'], color=next(colors), line_width=2)
-                    graph1.add_tools(HoverTool())
+                                             float(freqS.value), cardS.value, float(bwS.value), ref_mod,am,dS.value))
+                    truc = Line(x='x',y='y', line_color=next(colors), line_width=2)
+                    graph1.add_glyph(curr_dat,truc)
+                    graph1.add_tools(HoverTool(tooltips=[
+                        ("Capacity", "@y"),
+                        ("Availability", "@x"),
+                        ("Gain A", str(g1a)),
+                        ("Gain B", str(g1b)),
+                        ("Rainrate", str(rrS.value)),
+                        ("Polar", str(polarS.value)),
+                        ("Distance", str(dS.value)),
+                        ("Equip", str(equipS.value)),
+                        ('Freq', str(freqS.value)),
+                        ('Card', str(cardS.value)),
+                        ('Bandwidth', str(bwS.value))
+                        ]))
 
                 def xpicUp(attr, old, new):
                     equipS.options = list(cb0Ch(None, xpicS.value))
@@ -1130,33 +1312,95 @@ if __name__ == '__main__':
                 TOOLTIPS = [
                     ("Capacity", "@y"),
                     ("Distance", "@x"),
-                    ("Link", "@infl"),
-                    ("Equip","@infe")
+                    ("Gain A",str(g1a)),
+                    ("Gain B",str(g1b)),
+                    ("Rainrate",str(rr)),
+                    ("Polar",str(tau)),
+                    ("Availability",str(link.p_entry.data)),
+                    ("Equip",str(equip)),
+                    ('Freq',str(freq)),
+                    ('Card',str(card)),
+                    ('Bandwidth',str(bw)),
+                    ("AM :",str(am))
                 ]
                 graph2 = plt.figure(title='Capacity according to the distance',
-                                    x_axis_label='Distance (km)', y_axis_label='Capacity (Mbps)',tooltips=TOOLTIPS,sizing_mode='scale_both')
-                graph2.line('x', 'y', source=source2,color=next(colors),line_width=2)
-                def update_data2(event):
+                                    x_axis_label='Distance (km)', y_axis_label='Capacity (Mbps)',sizing_mode='scale_both')
 
+                init_line2 = Line(x='x', y='y', line_color=next(colors), line_width=2)
+                graph2.add_glyph(source2,init_line2)
+                graph2.add_tools(HoverTool(tooltips=TOOLTIPS))
+                def update_data2(event):
                     p0 = np.round(100.0 - float(pS.value),5)
                     g1a = float(poubelle.getAntGain(float(g1as2.value.__str__()), freq))
                     g1b = float(poubelle.getAntGain(float(g1bS2.value.__str__()), freq))
-                    # truc = [g1a,g1b,p0,rrS2.value,float(polarS2.value),xpicS2.value, equipS2.value, float(freqS2.value), cardS2.value, float(bwS2.value), ref_mod, amS2.value]
-                    # print(truc)
-                    #plotMod(self,g1a,g1b,el,geoloc,rr,tau,p0,xpic,equip,freq,card,bw,ref_mod,am)
+                    graph2.hover.clear()
+                    graph2.renderers = []
+                    TOOLTIPS = [
+                    ("Capacity", "@y"),
+                    ("Distance", "@x"),
+                    ("Gain A",str(g1a)),
+                    ("Gain B",str(g1b)),
+                    ("Rainrate",str(rrS2.value)),
+                    ("Polar",str(polarS2.value)),
+                    ("Availability",str(pS.value)),
+                    ("Equip",str(equipS2.value)),
+                    ('Freq',str(freqS2.value)),
+                    ('Card',str(cardS2.value)),
+                    ('Bandwidth',str(bwS2.value)),
+                    ("AM :",str(amS2.value))]
                     source2.data = plt.ColumnDataSource(
                         data=graph.plotMod(g1a,g1b, el, geoloc,
                                   rrS2.value,float(polarS2.value), p0,xpicS2.value, equipS2.value, float(freqS2.value), cardS2.value, float(bwS2.value), ref_mod, amS2.value)).data
+                    graph2.add_glyph(source2,init_line2)
+                    graph2.add_tools(HoverTool(tooltips=TOOLTIPS))
+
+
+
+                    # [
+                    # ("Capacity", "@y"),
+                    # ("Distance", "@x"),
+                    # ("Gain A",str(g1a)),
+                    # ("Gain B",str(g1b)),
+                    # ("Rainrate",str(rrS2.value)),
+                    # ("Polar",str(polarS2.value)),
+                    # ("Availability",str(pS.value)),
+                    # ("Equip",str(equipS2.value)),
+                    # ('Freq',str(freqS2.value)),
+                    # ('Card',str(cardS2.value)),
+                    # ('Bandwidth',str(bwS2.value)),
+                    # ("AM :",str(amS2.value))
+                    # ]
+
+
+
 
 
                 def add_data2(event):
                     p0 = 100.0 - float(pS.value)
                     g1a = float(poubelle.getAntGain(float(g1as2.value.__str__()), freq))
                     g1b =float(poubelle.getAntGain(float(g1bS2.value.__str__()), freq))
-                    curr_dat = graph.plotMod(g1a,g1b, el, geoloc,
-                                  rrS2.value,float(polarS2.value), p0, xpicS2.value, equipS2.value, float(freqS2.value), cardS2.value, float(bwS2.value), ref_mod, amS2.value)
-                    graph2.line(curr_dat['x'],curr_dat['y'], color = next(colors),line_width=2)
-                    #graph2.add_tools(HoverTool())
+                    curr_dat = plt.ColumnDataSource(data=graph.plotMod(g1a,g1b, el, geoloc,
+                                  rrS2.value,float(polarS2.value), p0, xpicS2.value, equipS2.value, float(freqS2.value), cardS2.value, float(bwS2.value), ref_mod, amS2.value))
+                    truc = Line(x='x',y='y', line_color=next(colors), line_width=2,subscribed_events = ["tap"])
+                    graph2.add_glyph(curr_dat,truc)
+                    graph2.add_tools(HoverTool(tooltips = [
+                    ("Capacity", "@y"),
+                    ("Distance", "@x"),
+                    ("Gain A",str(g1a)),
+                    ("Gain B",str(g1b)),
+                    ("Rainrate",str(rrS2.value)),
+                    ("Polar",str(polarS2.value)),
+                    ("Availability",str(pS.value)),
+                    ("Equip",str(equipS2.value)),
+                    ('Freq',str(freqS2.value)),
+                    ('Card',str(cardS2.value)),
+                    ('Bandwidth',str(bwS2.value)),
+                    ("AM :",str(amS2.value))]))
+
+
+
+
+
 
                 def xpicUp2(attr,old,new):
                     equipS2.options = list(cb0Ch(None,xpicS2.value))
@@ -1219,15 +1463,13 @@ if __name__ == '__main__':
                 polarS3 = Select(title="Polarization", value=str(link.polar.data), options=link.polar.choices)
                 # elS2 = Slider(title="Elevation (degrees)", value=float(el), start=0, end=45, step=10)
                 rrS3 = Slider(title="Rainrate (mm/h)", value=float(rr), start=0, end=110, step=1)
-                pS3 = TextInput(title="Availability", value=str(
-                    link.p_entry.data))  # Spinner(title="Availability", value=float(link.p_entry.data), low=99, high=100,step=0.001)
+                  # Spinner(title="Availability", value=float(link.p_entry.data), low=99, high=100,step=0.001)
                 add_button3 = Button(label='Add Line')
                 refresh_button3 = Button(label='Refresh')
                 widgets.append(g1aS3)
                 widgets.append(g1bS3)
                 widgets.append(polarS3)
                 widgets.append(rrS3)
-                widgets.append(pS3)
                 buttons.append(refresh_button3)
                 xpicS3 = Select(title="XPIC", value=str(xpic), options=ep.cb0.choices)
                 equipS3 = Select(title="Equipment", value=str(equip), options=cb0Ch(None, xpic))
@@ -1245,19 +1487,34 @@ if __name__ == '__main__':
                 widgets.append(amS3)
                 widgets2.append(refS3)
                 buttons.append(add_button3)
+                TOOLTIPS = [
+                    ("Capacity", "@y"),
+                    ("Distance", "@x"),
+                    ("Gain A", str(g1a)),
+                    ("Gain B", str(g1b)),
+                    ("Rainrate", str(rr)),
+                    ("Polar", str(tau)),
+                    ('Modulation',str(ref_mod)),
+                    ("Equip", str(equip)),
+                    ('Freq', str(freq)),
+                    ('Card', str(card)),
+                    ('Bandwidth', str(bw)),
+                    ("AM :", str(am))
+                ]
 
                 colors3 = itertools.cycle(bkolor.Category10_10)
                 source3 = plt.ColumnDataSource(
                     data=graph.plotAvail(g1a, g1b, el, geoloc, rr, tau, p0, xpic, equip, freq, card, bw, ref_mod, am))
                 graph3 = plt.figure(title='Capacity according to the distance',
                                     x_axis_label='Distance (km)', y_axis_label='Capacity (Mbps)',sizing_mode='scale_both')
-                l = graph3.line('x', 'y', source=source3, color=next(colors3),line_width=2)
-                lines.append((str(rr),[l]))
+                init_line3 = Line(x='x', y='y',line_color=next(colors3),line_width=2)
+                graph3.add_glyph(source3,init_line3)
+                graph3.add_tools(HoverTool(tooltips=TOOLTIPS))
+                #lines.append((str(rr),[l]))
                 # graph3.plot_width = 1000
                 # graph3.plot_height = 800
                 def update_data3(event):
-
-                    p0 = np.round(100.0 - float(pS3.value), 5)
+                    graph3.renderers = []
                     g1a = float(poubelle.getAntGain(float(g1aS3.value.__str__()), freq))
                     g1b = float(poubelle.getAntGain(float(g1bS3.value.__str__()), freq))
                     # truc = [g1a,g1b,p0,rrS2.value,float(polarS.value),xpicS.value, equipS.value, float(freqS.value), cardS.value, float(bwS.value), ref_mod, amS.value]
@@ -1268,18 +1525,43 @@ if __name__ == '__main__':
                         data=graph.plotAvail(g1a, g1b, el, geoloc,
                                            rrS3.value, float(polarS3.value), p0, xpicS3.value, equipS3.value,
                                            float(freqS3.value), cardS3.value, float(bwS3.value), refS3.value, amS3.value)).data
+                    graph3.add_glyph(source3, init_line3)
+                    graph3.add_tools(HoverTool(tooltips=[
+                        ("Capacity", "@y"),
+                        ("Distance", "@x"),
+                        ("Gain A", str(g1a)),
+                        ("Gain B", str(g1b)),
+                        ("Rainrate", str(rrS3.value)),
+                        ("Polar", str(polarS3.value)),
+                        ("Modulation", str(refS3.value)),
+                        ("Equip", str(equipS3.value)),
+                        ('Freq', str(freqS3.value)),
+                        ('Card', str(cardS3.value)),
+                        ('Bandwidth', str(bwS3.value)),
+                        ("AM :", str(amS3.value))]))
 
                 def add_data3(event):
-                    p0 = 100.0 - float(pS3.value)
                     g1a = float(poubelle.getAntGain(float(g1aS3.value.__str__()), freq))
                     g1b = float(poubelle.getAntGain(float(g1bS3.value.__str__()), freq))
-                    curr_dat = graph.plotAvail(g1a, g1b, el, geoloc,
+                    curr_dat = plt.ColumnDataSource(graph.plotAvail(g1a, g1b, el, geoloc,
                                              rrS3.value, float(polarS3.value), p0, xpicS3.value, equipS3.value,
-                                             float(freqS3.value), cardS3.value, float(bwS3.value), refS3.value, amS3.value)
-                    l = graph3.line(curr_dat['x'], curr_dat['y'], color=next(colors3),line_width=2)
-                    graph3.add_tools(HoverTool())
-                    lines.append((str(rrS3.value), [l]))
-                    legend.items = lines
+                                             float(freqS3.value), cardS3.value, float(bwS3.value), refS3.value, amS3.value))
+                    truc = Line(x='x', y='y', line_color=next(colors3), line_width=2)
+                    graph3.add_glyph(curr_dat,truc)
+                    graph3.add_tools(HoverTool(tooltips=[
+                        ("Capacity", "@y"),
+                        ("Distance", "@x"),
+                        ("Gain A", str(g1a)),
+                        ("Gain B", str(g1b)),
+                        ("Rainrate", str(rrS3.value)),
+                        ("Polar", str(polarS3.value)),
+                        ("Modulation", str(refS3.value)),
+                        ("Equip", str(equipS3.value)),
+                        ('Freq', str(freqS3.value)),
+                        ('Card', str(cardS3.value)),
+                        ('Bandwidth', str(bwS3.value)),
+                        ("AM :", str(amS3.value))]))
+
 
                 def xpicUp3(attr, old, new):
                     equipS3.options = list(cb0Ch(None, xpicS3.value))
@@ -1320,7 +1602,6 @@ if __name__ == '__main__':
                         refS3.value = new
 
                 legend = Legend(items=lines)
-                graph3.add_tools(HoverTool())
                 graph3.css_classes = ["container"]
                 refresh_button3.on_click(handler=update_data3)
                 add_button3.on_click(handler=add_data3)
@@ -1389,6 +1670,7 @@ if __name__ == '__main__':
             if form.sp.peak.data != None and form.sp.avaiPIR.data:
                 poubelle.PIR = float(form.sp.peak.data)
                 poubelle.AVAI_PIR = float(form.sp.avaiPIR.data)
+            else: poubelle.PIR = 0.0
 
 
             poubelle.MARG = float(form.sp.margin.data)
@@ -1424,6 +1706,7 @@ if __name__ == '__main__':
             if form.sp.peak.data != None and form.sp.avaiPIR.data!=None:
                 poubelle_2.PIR = float(form.sp.peak.data)
                 poubelle_2.AVAI_PIR = float(form.sp.avaiPIR.data)
+            else: poubelle_2.PIR = 0.0
 
             poubelle_2.MARG = float(form.sp.margin.data)
             poubelle_2.POLAR = 0 if link.polar.data=='h' else 90 # float(form.polar.data)
