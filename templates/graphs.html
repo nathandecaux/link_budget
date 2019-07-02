@@ -16,18 +16,13 @@
 <script>
 $(function(){
   $("#header").load("static/header.html");
-
 });
 
 
 
+
 </script>
-<script type="text/javascript">
-	function move() {
-		var content = document.getElementsByClassName('bk truc')[0];
-		document.getElementById("pouet").innerHTML = content;
-	}
-</script>
+
 {{ js_resources|safe}}
 {{ css_resources|safe}}
 <body>
@@ -36,22 +31,36 @@ $(function(){
 <div id="header"></div>
 
 <body>
-<div class="bk">
-    <div class="container-fluid">
+
+
+<div class="accordion" id="accordionExample">
+        <div class="card">
+            <div class="card-header" id="heading1">
+              <h5 class="mb-0">
+                <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapse1" aria-expanded="true" aria-controls="collapse1">
+Graphs
+                </button>
+              </h5>
+            </div>
+            <div id="collapse1" class="collapse show responsive" aria-labelledby="heading1" data-parent="#accordionExample">
+                <div class="card-body table-responsive">
                       {{
                         graph1|safe
-                       }}
-                    {{
-                        truc|safe
-                    }}
-
-    </div>
-    <div id="pouet"></div>
+                      }}
+                </div>
+            </div>
+        </div>
 </div>
+
+
 </body>
 
+<script>
+$(function() {
+  $("div.bk.bk-root").css( "border", "3px solid red" );
+  });
+</script>
 
-<input type="submit" onclick="move();" value="Move">
 
 
 {% endblock %}

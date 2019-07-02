@@ -160,6 +160,7 @@ if __name__ == '__main__':
     path = os.path.join('.', os.path.dirname(__file__), 'static/js/sijax/')
     app.config['SIJAX_STATIC_PATH'] = path
     app.config['SIJAX_JSON_URI'] = '/static/js/sijax/json2.js'
+    app.config['BOOTSTRAP_SERVE_LOCAL'] = True
     flask_sijax.Sijax(app)
     Bootstrap(app)
 
@@ -873,7 +874,9 @@ if __name__ == '__main__':
                 bwS3.on_change('value', bwUp3)
                 refS3.on_change('options', refUp3)
                 refS3.on_change('value', refUp3)
-                doc.add_root(row(graph3, column(row(column(widgets),column(widgets2)),row(buttons))))
+                comp = row(graph3, column(row(column(widgets),column(widgets2)),row(buttons)))
+
+                doc.add_root(comp)
                 #doc.add_root(bk.layouts.grid(children=[[graph3,[[widgets,widgets2],[buttons]]]]))
 
         def get_free_tcp_port():
@@ -898,6 +901,7 @@ if __name__ == '__main__':
         if form.is_submitted():
             Thread(target=bk_worker).start()
             script = server_document('http://'+addr+':'+str(session_port)+'/bkapp2')
+            print(script)
             return render_template('graphs.html',graph1=script,title='Graphs viewer')#,rrS=script,graph1=div,graph2=file_html(graph1,CDN,'plot1'),graph3=file_html(graph1,CDN,'plot1'),js_resources=js_resources,css_resources=css_resources)
             # return render_template('graphs.html', graph=html)
 
@@ -1720,5 +1724,8 @@ if __name__ == '__main__':
         return render_template('index.html',form=form,title='Ericsson scenario')
 
 
+    @flask_sijax.route(app, '/help')
+    def help():
+        return render_template('help.html')
 
     app.run(host='0.0.0.0',port=80,debug=True)

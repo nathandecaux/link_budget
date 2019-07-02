@@ -1,0 +1,211 @@
+{% extends "bootstrap/base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+{% import "bootstrap/fixes.html" as fixes %}
+{% import "bootstrap/utils.html" as util %}
+
+{% block content %}
+{{util.flashed_messages(dismissible=True)}}
+<link rel="stylesheet" href="static/css/bootstrap.min.css">
+
+<script src="static/js/bootstrap.min.js"></script>
+
+<script src="/static/js/jquery-3.4.1.js"></script>
+<script>
+$(function(){
+  $("#header").load("static/header.html");
+});
+</script>
+<script type="text/javascript" src="/static/js/sijax/sijax.js"></script>
+
+<script type="text/javascript">
+    {{ g.sijax.get_js()|safe }}
+</script>
+<div id="header"></div>
+<div class='container'>
+  <style>
+
+h1 {
+	margin-top: 1.5rem;
+  margin-bottom: 1rem;
+  border: 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+h2 {
+	margin-top: 1.5rem;
+  margin-bottom: 1rem;
+  border: 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+blockquote {
+  font-style:italic;
+  font-size: 90%;
+  background-color: whitesmoke;
+  opacity: 0.76;
+  margin-left: 1rem;
+  border: 0;
+  border-left: 3px solid rgba(0, 0, 0, 0.1);
+}
+
+</style>
+<h1 id="linkbudget">Link Budget</h1>
+
+<p>Flask Application (Python) using ITU-R P530 Recommandations in order to provide graphs and tables as microwave links planning tools.</p>
+
+<p>Based on Huawei RTN and Ericsson MINI-LINK data files.</p>
+
+<h2 id="forms">Forms</h2>
+
+<p>To get access to the different features, different forms need to be filled in :</p>
+
+<h4 id="linkprofil">Link Profil</h4>
+
+<p>The link parameters are used in order to calculate the free space loss + the attenuation caused by the rain</p>
+
+<ul>
+<li>Antenna Diameter A &amp; B : Selection field to set the antenna diameter of both site. </li>
+
+<li>Rx Antenna Elevation : Text field waiting for a float value to set the tilt angle. This value will influence the air index gradient and then provide the actual link distance</li>
+
+<li>Polar : Selection field to set the antenna polarization</li>
+
+<li>Availability : Text field waiting for a float value to set the expected availability in % / year for the Capacity / Distance graph</li>
+
+<li>Site Location : Text field waiting for an address (complete or not). A  geocode of this address is get by requesting the <a href="https://nominatim.openstreetmap.org">OpenStreetMap API</a>. Then, a approximate rainrate (mm/h for 0.01% of a year) is processed using those coordinates and the ITU-R P 837 recommandations</li>
+
+<li>Rainrate : In case of offline using / unavailability of the OpenStreetMap API, the rainrate can be directly specified in this field</li>
+</ul>
+
+<h4 id="equipmentprofil">Equipment Profil</h4>
+
+<p>The equipment should be specified in order to get received level thresholds that will be useful to process graphs.</p>
+
+<p>This is a dynamic form : it consists in selection field whose choices are dynamically set according to previous selected values. Choices are then updated using the equipment database.</p>
+
+<ul>
+<li>XPIC : Not implemented yet, but need a 'Yes' or 'No' choice anyway</li>
+
+<li>Equipment : Equipment series name</li>
+
+<li>Frequency : Band designator</li>
+
+<li>Modem Card (+ODU for Huawei) : Workin RF modem card name. </li>
+</ul>
+
+<blockquote>
+  <p><em>Note : In the case of Huawei full outdoors equipment, the only possible choice is the equipment name itself</em></p>
+  
+  <ul>
+  <li>Bandwidth : Working channel spacing</li>
+  
+  <li>Reference modulation : The working modulation that will be use for the Availability / Distance graph, in order to fix the Rx Level threshold</li>
+  
+  <li>Adaptative Modulation : Specify if the AM feature is activated or not
+  <em>Note : In the Ericsson form, this field replace the XPIC one</em></li>
+  </ul>
+</blockquote>
+
+<h3 id="scenarioprofil">Scenario Profil</h3>
+
+<p>A scenario form must be filled in the 'Scenario' feature, in order to set those expected parameters :</p>
+
+<ul>
+<li>Capacity : Corresponding to the expected CIR (Commited Information Rate)</li>
+
+<li>Margin : Let the possibility to set an absolute margin for the CIR and the PIR</li>
+
+<li>PIR (optionnal) :  Permit setting a second target capacity</li>
+
+<li>Availability PIR : Must be set if the PIR field is filled </li>
+
+<li>Distance</li>
+</ul>
+
+<blockquote>
+  <p><em>Note : The CIR availability must be set in the 'Availability' field from the Link Profil subform</em></p>
+</blockquote>
+
+<h2 id="graphs">Graphs</h2>
+
+<ol>
+<li>Capacity / Distance </li>
+</ol>
+
+<p>Returns a graph showing the expected link capacity according to the distance. </p>
+
+<blockquote>
+  <p><em>The link capacity is calculated according to the highest modulation that can be use, relativly to it Rx threshold and the current Rx level.</em></p>
+</blockquote>
+
+<p>The Rx level / link budget is obtained calculating the following sum </p>
+
+<blockquote>
+  <p><em>Free space loss + The attenuation caused by the rain (according to the specified availability and using the equation 33 from the ITU-R P 530 recommandations) + Antenna gain (according to their diameters) + the maximum Tx Power (depending on the equipment specified)</em></p>
+</blockquote>
+
+<ol>
+<li>Availability / Distance</li>
+</ol>
+
+<p>Returns a graph showing the evolution of the expected availability according to the distance, and for a specific working modulation.</p>
+
+<p>As the modulation is fixed, a target Rx threshold is set, that can be assume as maximum acceptable attenuation. Then, by manipulating the ITU-R P 530 Eq. 33, the script get the availability that fit to this specific attenuation.</p>
+
+<ol>
+<li>Capacity / Availability</li>
+</ol>
+
+<p>Returns a graph showing the maximum expected capacity according the availability, and for a specific distance.</p>
+
+<blockquote>
+  <p>Example : <strong>{x = 99.993 % ; y = 1093 Mbps}</strong> ==> <em>It means that the link can work for 99.993 % of the time using a 1093 Mbps throughput</em></p>
+  
+  <p><em>Note : By clicking on the associated CheckBox in the 'Graphs' form, an additionnal text field will appear in order to set the Distance value</em>  </p>
+</blockquote>
+
+<p>For each graph that is displayed, there's a small form aside that permit updating the initial plot line ( = Refresh button) or adding a new line ( = Add line button). </p>
+
+<p>Graphs are powered by the Bokeh Library. Uses of the graph toolbar (such as Zoom by selection, etc.) are described in the <a href="https://bokeh.pydata.org/en/latest/docs/user_guide/tools.html#built-in-tools">Bokeh User Guide</a></p>
+
+<h2 id="scenario">Scenario</h2>
+
+<p>The scenario feature is a tool that will suggest a list of possibilies according to the link and some target capacities (CIR and optionnaly PIR) and related availabilities. After sending the form, the application will show several tables :</p>
+
+<ol>
+<li>E-Band (1+0)</li>
+
+<li>E-Band (XPIC 2+0) : Using XPIC (but not implemented yet, it basically just multiply by two the capacity)</li>
+
+<li>E-Band + MW (2+0) : Suggestions of dual carrier links using a combination of an E-band link and a 18 or 23 GHz link</li>
+
+<li>MW (1+0)</li>
+
+<li>MW (XPIC 2+0)</li>
+</ol>
+
+<p>For single and cross-polar links, tables are designed as follows :</p>
+
+<blockquote>
+  <p>Model (Equipment+Frequency+Bandwidth+Modulation) | Total Capacity | Availability</p>
+</blockquote>
+
+<p>For E-band + MW links, tables are designed as follows :</p>
+
+<blockquote>
+  <p>E-Band Model | Microwave Model | E-Band Capacity | MW Capacity | Total Capacity | Availability (returns the smallest one)</p>
+</blockquote>
+
+<p>Note that in case of Ericsson equipment, an additionnal 'Modulation' column was necessary.
+If a PIR has been set up, each row from each table can be clicked to show an additionnal row. This additionnal shows the PIR configuration, using the same format as rows corresponding to the CIR configuration.</p>
+
+<blockquote>
+  <p><em>To get to the PIR configuration, the algorithm will increase the modulation and until the PIR is reached, if possible. In the RTN 380AX product, the bandwidth could also been increased following some specific upshift rules</em></p>
+</blockquote>
+</div>
+{% endblock %}
+
+{% block head %}
+{{super()}}
+{{fixes.ie8()}}
+{% endblock %}
