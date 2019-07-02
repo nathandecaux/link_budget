@@ -96,7 +96,21 @@ If a PIR has been set up, each row from each table can be clicked to show an add
 > *To get to the PIR configuration, the algorithm will increase the modulation and until the PIR is reached, if possible. In the RTN 380AX product, the bandwidth could also been increased following some specific upshift rules*
 
 
+## Dependancies
 
+- Flask : v1.0.3
+- Flask-Bootstrap : v3.3.7.1
+- Flask-Sijax : v0.4.1
+- Flask-WTF : v0.14.2
+- Astropy : v3.1.2
+- Bokeh : v1.2.0
+- Itur : Custom version
+- Numpy : v1.16.3
+- Scipy : v1.3.0
+- TinyDB : v3.13.0
+- Tornado : v6.0.2
+
+The main web application is running with Flask, on a fixed TCP port. Graphs are running using a Bokeh Server, that is using a random TCP client port for each session (as this tool is supposed to be used by a limited number of users)
 
 
 
