@@ -16,52 +16,53 @@
 <script>
 $(function(){
   $("#header").load("static/header.html");
+
 });
 
 
 
-
 </script>
-
+<script type="text/javascript">
+	function move() {
+		var content = document.getElementsByClassName('bk truc')[0];
+		document.getElementById("pouet").innerHTML = content;
+	}
+</script>
 {{ js_resources|safe}}
 {{ css_resources|safe}}
+
+<style>
+  body {
+    background-image: url('/static/images/background.jpg');
+    background-repeat:repeat;
+    background-attachment:fixed;
+    background-size:cover;
+  }
+  .container-fluid {
+    background-color: white;
+    border-radius: 25px;
+  }
+  </style>
+
 <body>
 <head>  <title>Graphs</title></head>
 
 <div id="header"></div>
 
 <body>
-
-
-<div class="accordion" id="accordionExample">
-        <div class="card">
-            <div class="card-header" id="heading1">
-              <h5 class="mb-0">
-                <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapse1" aria-expanded="true" aria-controls="collapse1">
-Graphs
-                </button>
-              </h5>
-            </div>
-            <div id="collapse1" class="collapse show responsive" aria-labelledby="heading1" data-parent="#accordionExample">
-                <div class="card-body table-responsive">
+<div class="bk">
+    <div class="container-fluid">
                       {{
                         graph1|safe
-                      }}
-                </div>
-            </div>
-        </div>
+                       }}
+                    {{
+                        truc|safe
+                    }}
+
+    </div>
+    <div id="pouet"></div>
 </div>
-
-
 </body>
-
-<script>
-$(function() {
-  $("div.bk.bk-root").css( "border", "3px solid red" );
-  });
-</script>
-
-
 
 {% endblock %}
 

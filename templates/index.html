@@ -18,8 +18,10 @@
     $("#lp-p_entry").attr('required', 'required')
     $("#mf-dist").css('display', 'none');
     $("label[for='mf-dist']").css('display','none')
-
-
+    $("#sp-peak").css('display', 'none');
+    $("label[for='sp-peak']").css('display','none')
+    $("#sp-avaiPIR").css('display', 'none');
+    $("label[for='sp-avaiPIR']").css('display','none')
     if (($("#ep-cb0").val() == "Yes") || ($("#ep-cb0").val()) == "No" )
     {
         $xpic = $('#ep-cb0').val();
@@ -28,6 +30,18 @@
 
 });
 </script>
+<style>
+body {
+  background-image: url('/static/images/background.jpg');
+  background-repeat:repeat;
+	background-attachment:fixed;
+  background-size:cover;
+}
+.container {
+  background-color: white;
+  border-radius: 25px;
+}
+</style>
 <link rel="stylesheet" href="static/css/bootstrap.min.css">
 
 <script src="static/js/bootstrap.min.js"></script>
@@ -42,9 +56,9 @@ function action()
 }
 
 </script>
-<div id="header"></div>s
+<div id="header"></div>
 
-
+<body>
 <div class="container">
   <pouet>
   {{
@@ -72,7 +86,14 @@ function action()
           $("label[for='mf-dist']").css('display','none')
     }
    });
-
+  
+   $("#sp-am").change(function()
+    {
+      if ($("#sp-am").val() == 'Yes')
+        {
+          $("#sp-peak").css('display','');
+        }
+    });
   $("#ep-cb1").change(function()
     {
     $equi = $('#ep-cb1').val();
@@ -119,7 +140,7 @@ function action()
 </script>
 
 </div>
-
+</body>
 
 {% endblock %}
 

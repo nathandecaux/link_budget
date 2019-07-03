@@ -10,19 +10,26 @@
 <script src="static/js/bootstrap.min.js"></script>
 
 <script src="/static/js/jquery-3.4.1.js"></script>
-<script>
-$(function(){
-  $("#header").load("static/header.html");
-});
-</script>
+
 <script type="text/javascript" src="/static/js/sijax/sijax.js"></script>
 
 <script type="text/javascript">
     {{ g.sijax.get_js()|safe }}
 </script>
+<script>
+  $(function(){
+    $("#header").load("static/header.html");
+  });
+  </script>
+</script>
+{{ js_resources|safe}}
+{{ css_resources|safe}}
+<body>
 <div id="header"></div>
 <div class='container'>
-  <style>
+
+
+<style>
 
 h1 {
 	margin-top: 1.5rem;
@@ -47,8 +54,22 @@ blockquote {
   border: 0;
   border-left: 3px solid rgba(0, 0, 0, 0.1);
 }
+  body {
+  background-image: url('/static/images/background.jpg');
+  background-repeat:repeat;
+	background-attachment:fixed;
+  background-size:cover;
+}
+.container {
+  background-color: white;
+  border-radius: 25px;
+
+}
 
 </style>
+<head>  <title>Help</title></head>
+
+
 <h1 id="linkbudget">Link Budget</h1>
 
 <p>Flask Application (Python) using ITU-R P530 Recommandations in order to provide graphs and tables as microwave links planning tools.</p>
@@ -59,7 +80,7 @@ blockquote {
 
 <p>To get access to the different features, different forms need to be filled in :</p>
 
-<h4 id="linkprofil">Link Profil</h4>
+<h4 id="linkProfile">Link Profile</h4>
 
 <p>The link parameters are used in order to calculate the free space loss + the attenuation caused by the rain</p>
 
@@ -67,6 +88,9 @@ blockquote {
 <li>Antenna Diameter A &amp; B : Selection field to set the antenna diameter of both site. </li>
 
 <li>Rx Antenna Elevation : Text field waiting for a float value to set the tilt angle. This value will influence the air index gradient and then provide the actual link distance</li>
+<blockquote>
+  <p><em>Note : Float values should be given using the format '1' or '1.1'. ',' won't be recognized</em></p>
+</blockquote>
 
 <li>Polar : Selection field to set the antenna polarization</li>
 
@@ -77,7 +101,7 @@ blockquote {
 <li>Rainrate : In case of offline using / unavailability of the OpenStreetMap API, the rainrate can be directly specified in this field</li>
 </ul>
 
-<h4 id="equipmentprofil">Equipment Profil</h4>
+<h4 id="equipmentProfile">Equipment Profile</h4>
 
 <p>The equipment should be specified in order to get received level thresholds that will be useful to process graphs.</p>
 
@@ -106,7 +130,7 @@ blockquote {
   </ul>
 </blockquote>
 
-<h3 id="scenarioprofil">Scenario Profil</h3>
+<h3 id="scenarioProfile">Scenario Profile</h3>
 
 <p>A scenario form must be filled in the 'Scenario' feature, in order to set those expected parameters :</p>
 
@@ -123,7 +147,7 @@ blockquote {
 </ul>
 
 <blockquote>
-  <p><em>Note : The CIR availability must be set in the 'Availability' field from the Link Profil subform</em></p>
+  <p><em>Note : The CIR availability must be set in the 'Availability' field from the Link Profile subform</em></p>
 </blockquote>
 
 <h2 id="graphs">Graphs</h2>
@@ -203,8 +227,8 @@ If a PIR has been set up, each row from each table can be clicked to show an add
   <p><em>To get to the PIR configuration, the algorithm will increase the modulation and until the PIR is reached, if possible. In the RTN 380AX product, the bandwidth could also been increased following some specific upshift rules</em></p>
 </blockquote>
 </div>
+</body>
 {% endblock %}
-
 {% block head %}
 {{super()}}
 {{fixes.ie8()}}
