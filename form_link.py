@@ -6,7 +6,7 @@ from bokeh.server.server import Server,BaseServer
 from tornado.ioloop import IOLoop
 import bokeh.palettes as bkolor
 from bokeh import events
-
+from requests.auth import HTTPProxyAuth
 import itertools
 from flask_wtf import Form, RecaptchaField
 from wtforms import SelectField
@@ -126,15 +126,17 @@ class EquipForm(Form):
         return True
 
 class ScenarioForm(Form):
+    dist = DecimalField('Distance (km)')
     capa = DecimalField('Capacity (Mbps)')
     margin = DecimalField('Margin (Mbps)')
+    am = SelectField('Adaptative Modulation', choices=[('0', 'No'),('1', 'Yes')])
     peak = DecimalField('PIR (Mbps)')
     avaiPIR = DecimalField('Availability PIR ( %/year )')
-    dist = DecimalField('Distance (km)')
+    
 
 class GlobalScenarioForm(Form):
-    lp = FormField(LinkForm,label="Link Profil")
-    sp = FormField(ScenarioForm,label="Scenario Profil")
+    lp = FormField(LinkForm,label="Link Profile")
+    sp = FormField(ScenarioForm,label="Scenario Profile")
     submit_button = SubmitField('Submit Form')
 
 class MetricForm(Form):
@@ -145,23 +147,23 @@ class MetricForm(Form):
     def validate(self):
         return True
 class GlobalForm(Form):
-    lp = FormField(LinkForm,label="Link Profil")
-    ep = FormField(EquipForm, label="Equipment Profil")
+    lp = FormField(LinkForm,label="Link Profile")
+    ep = FormField(EquipForm, label="Equipment Profile")
     mf = FormField(MetricForm, label="Graphs")
     submit_button = SubmitField('Submit Form')
 
 class GlobalFormEric(Form):
-    lp = FormField(LinkForm,label="Link Profil")
-    ep = FormField(EquipFormEric, label="Equipment Profil")
+    lp = FormField(LinkForm,label="Link Profile")
+    ep = FormField(EquipFormEric, label="Equipment Profile")
     mf = FormField(MetricForm, label="Graphs")
     submit_button = SubmitField('Submit Form')
 
-if __name__ == '__main__':
+def main():
     path = os.path.join('.', os.path.dirname(__file__), 'static/js/sijax/')
     app.config['SIJAX_STATIC_PATH'] = path
     app.config['SIJAX_JSON_URI'] = '/static/js/sijax/json2.js'
-    app.config['BOOTSTRAP_SERVE_LOCAL'] = True
     flask_sijax.Sijax(app)
+    app.config['BOOTSTRAP_SERVE_LOCAL']= True
     Bootstrap(app)
 
     app.config['SECRET_KEY'] = 'devkey'
@@ -363,6 +365,8 @@ if __name__ == '__main__':
             d1a = float(link.gae.data)
             d1b = float(link.gbe.data)
             el = float(link.ele.data)
+            proxyAddr = {'https':'xndecaux@10.101.13.55:8080','http':'xndecaux@10.101.13.55:8080'}
+
             URL = "https://nominatim.openstreetmap.org/search"
             geoloc = (0, 0)
 
@@ -372,7 +376,7 @@ if __name__ == '__main__':
                 location = str(link.xe.data)
                 # key = 'AIzaSyA3nLe6yUCTTMB82u1LTuWoyGJGvr8gBZg'
                 location_detail = {'q': location, 'format': 'json'}
-                r = requests.get(url=URL, params=location_detail)
+                r = requests.get(url=URL, params=location_detail,proxies=proxyAddr,verify=False)
                 data = r.json()
                 latitude = float(data[0]['lat'])
                 longitude = float(data[0]['lon'])
@@ -382,7 +386,7 @@ if __name__ == '__main__':
             else:
                 rr = float(link.rre.data)
             tau = float(link.polar.data) # float(form.polar.data)
-            # rr = float(rp.rre.data)
+            
             p0 = 100 - float(link.p_entry.data)
             xpic = ep.cb0.data
             equip = ep.cb1.data
@@ -451,7 +455,7 @@ if __name__ == '__main__':
                                         dist))
 
                 graph1 = plt.figure(title='Capacity according to the availability',
-                                    x_axis_label='Availability (%)', y_axis_label='Capacity (Mbps)')
+                                    x_axis_label='Availability (%)', y_axis_label='Capacity (Mbps)',sizing_mode='scale_both')
                 init_line = Line(x='x', y='y', line_color=next(colors), line_width=2)
                 graph1.add_glyph(source1, init_line)
                 graph1.add_tools(HoverTool(tooltips=TOOLTIPS))
@@ -743,8 +747,9 @@ if __name__ == '__main__':
                 widgets2.append(refS3)
                 buttons.append(add_button3)
                 TOOLTIPS = [
-                    ("Capacity", "@y"),
+                    ("Availability", "@y{1.111111}"),
                     ("Distance", "@x"),
+                    ("RSL", "@rsl"),
                     ("Gain A", str(g1a)),
                     ("Gain B", str(g1b)),
                     ("Rainrate", str(rr)),
@@ -759,8 +764,8 @@ if __name__ == '__main__':
                 colors3 = itertools.cycle(bkolor.Category10_10)
                 source3 = plt.ColumnDataSource(
                     data=graph.plotAvail(g1a, g1b, el, geoloc, rr, tau, p0, xpic, equip, freq, card, bw, ref_mod))
-                graph3 = plt.figure(title='Capacity according to the distance',
-                                    x_axis_label='Distance (km)', y_axis_label='Capacity (Mbps)',
+                graph3 = plt.figure(title='Availability according to the distance',
+                                    x_axis_label='Distance (km)', y_axis_label='Availability (% / year)',
                                     sizing_mode='scale_both')
                 init_line3 = Line(x='x', y='y', line_color=next(colors3), line_width=2)
                 graph3.add_glyph(source3, init_line3)
@@ -784,7 +789,7 @@ if __name__ == '__main__':
                                              )).data
                     graph3.add_glyph(source3, init_line3)
                     graph3.add_tools(HoverTool(tooltips=[
-                        ("Capacity", "@y"),
+                       ("Availability", "@y{1.111111}"),
                         ("Distance", "@x"),
                         ("Gain A", str(g1a)),
                         ("Gain B", str(g1b)),
@@ -808,7 +813,7 @@ if __name__ == '__main__':
                     truc = Line(x='x', y='y', line_color=next(colors3), line_width=2)
                     graph3.add_glyph(curr_dat, truc)
                     graph3.add_tools(HoverTool(tooltips=[
-                        ("Capacity", "@y"),
+                        ("Availability", "@y{1.111111}"),
                         ("Distance", "@x"),
                         ("Gain A", str(g1a)),
                         ("Gain B", str(g1b)),
@@ -822,9 +827,11 @@ if __name__ == '__main__':
                         ("AM :", str(xpicS3.value))]))
 
                 def xpicUp3(attr, old, new):
-                    equipS3.options = list(cb0Ch(None, xpicS3.value))
+        
+                    equipS3.options = list(cb0Ch(None, new))
 
                 def equipUp3(attr, old, new):
+            
                     if new != []:
                         if isinstance(new, list):
                             new = new[0]
@@ -874,9 +881,7 @@ if __name__ == '__main__':
                 bwS3.on_change('value', bwUp3)
                 refS3.on_change('options', refUp3)
                 refS3.on_change('value', refUp3)
-                comp = row(graph3, column(row(column(widgets),column(widgets2)),row(buttons)))
-
-                doc.add_root(comp)
+                doc.add_root(row(graph3, column(row(column(widgets),column(widgets2)),row(buttons))))
                 #doc.add_root(bk.layouts.grid(children=[[graph3,[[widgets,widgets2],[buttons]]]]))
 
         def get_free_tcp_port():
@@ -894,18 +899,17 @@ if __name__ == '__main__':
             # Can't pass num_procs > 1 in this configuration. If you need to run multiple
             # processes, see e.g. flask_gunicorn_embed.py
             
-            server = Server({'/bkapp2': bkapp2},port=session_port,io_loop=IOLoop(), allow_websocket_origin=[addr])
+            server = Server({'/bkapp2': bkapp2},port=session_port,io_loop=IOLoop(), allow_websocket_origin=[addr+':5000'])
             server.start()
             server.io_loop.start()
 
         if form.is_submitted():
             Thread(target=bk_worker).start()
             script = server_document('http://'+addr+':'+str(session_port)+'/bkapp2')
-            print(script)
             return render_template('graphs.html',graph1=script,title='Graphs viewer')#,rrS=script,graph1=div,graph2=file_html(graph1,CDN,'plot1'),graph3=file_html(graph1,CDN,'plot1'),js_resources=js_resources,css_resources=css_resources)
             # return render_template('graphs.html', graph=html)
 
-        return render_template('index.html', form=form,title='Ericsson profil')
+        return render_template('index.html', form=form,title='Ericsson Profile')
 
     @flask_sijax.route(app,'/huawei')
     def huawei():
@@ -1090,6 +1094,8 @@ if __name__ == '__main__':
             d1a = float(link.gae.data)
             d1b = float(link.gbe.data)
             el = float(link.ele.data)
+            proxyAddr = {'https':'xndecaux@10.101.13.55:8080','http':'xndecaux@10.101.13.55:8080'}
+
             URL = "https://nominatim.openstreetmap.org/search"
             geoloc = (0, 0)
             if form.mf.dist.data != None:
@@ -1100,7 +1106,7 @@ if __name__ == '__main__':
                 location = str(link.xe.data)
                 # key = 'AIzaSyA3nLe6yUCTTMB82u1LTuWoyGJGvr8gBZg'
                 location_detail = {'q': location, 'format': 'json'}
-                r = requests.get(url=URL, params=location_detail)
+                r = requests.get(url=URL, params=location_detail,proxies=proxyAddr,verify=False)
                 data = r.json()
                 latitude = float(data[0]['lat'])
                 longitude = float(data[0]['lon'])
@@ -1176,7 +1182,7 @@ if __name__ == '__main__':
                     data=graph.plotRain(g1a, g1b, el, geoloc, rr, tau, p0, xpic, equip, freq, card, bw, ref_mod,am,dist))
 
                 graph1 = plt.figure(title='Capacity according to the availability',
-                                    x_axis_label='Availability (%)', y_axis_label='Capacity (Mbps)')
+                                    x_axis_label='Availability (%)', y_axis_label='Capacity (Mbps)',sizing_mode='scale_both')
                 init_line = Line(x='x', y='y', line_color=next(colors), line_width=2)
                 graph1.add_glyph(source1,init_line)
                 graph1.add_tools(HoverTool(tooltips=TOOLTIPS))
@@ -1492,7 +1498,7 @@ if __name__ == '__main__':
                 widgets2.append(refS3)
                 buttons.append(add_button3)
                 TOOLTIPS = [
-                    ("Capacity", "@y"),
+                    ("Availability", "@y{1.111111}"),
                     ("Distance", "@x"),
                     ("Gain A", str(g1a)),
                     ("Gain B", str(g1b)),
@@ -1509,8 +1515,8 @@ if __name__ == '__main__':
                 colors3 = itertools.cycle(bkolor.Category10_10)
                 source3 = plt.ColumnDataSource(
                     data=graph.plotAvail(g1a, g1b, el, geoloc, rr, tau, p0, xpic, equip, freq, card, bw, ref_mod, am))
-                graph3 = plt.figure(title='Capacity according to the distance',
-                                    x_axis_label='Distance (km)', y_axis_label='Capacity (Mbps)',sizing_mode='scale_both')
+                graph3 = plt.figure(title='Availability according to the distance',
+                                    x_axis_label='Distance (km)', y_axis_label='Availability (% / year)',sizing_mode='scale_both')
                 init_line3 = Line(x='x', y='y',line_color=next(colors3),line_width=2)
                 graph3.add_glyph(source3,init_line3)
                 graph3.add_tools(HoverTool(tooltips=TOOLTIPS))
@@ -1531,7 +1537,7 @@ if __name__ == '__main__':
                                            float(freqS3.value), cardS3.value, float(bwS3.value), refS3.value, amS3.value)).data
                     graph3.add_glyph(source3, init_line3)
                     graph3.add_tools(HoverTool(tooltips=[
-                        ("Capacity", "@y"),
+                        ("Availability", "@y{1.111111}"),
                         ("Distance", "@x"),
                         ("Gain A", str(g1a)),
                         ("Gain B", str(g1b)),
@@ -1553,7 +1559,7 @@ if __name__ == '__main__':
                     truc = Line(x='x', y='y', line_color=next(colors3), line_width=2)
                     graph3.add_glyph(curr_dat,truc)
                     graph3.add_tools(HoverTool(tooltips=[
-                        ("Capacity", "@y"),
+                        ("Availability", "@y{1.111111}"),
                         ("Distance", "@x"),
                         ("Gain A", str(g1a)),
                         ("Gain B", str(g1b)),
@@ -1638,7 +1644,7 @@ if __name__ == '__main__':
             # Can't pass num_procs > 1 in this configuration. If you need to run multiple
             # processes, see e.g. flask_gunicorn_embed.py
 
-            server = Server({'/bkapp': bkapp},port=session_port,io_loop=IOLoop(), allow_websocket_origin=[addr])
+            server = Server({'/bkapp': bkapp},port=session_port,io_loop=IOLoop(), allow_websocket_origin=[addr+':5000'])
             server.start()
             server.io_loop.start()
             print('pouet'+str(server.port))
@@ -1651,19 +1657,23 @@ if __name__ == '__main__':
             return render_template('graphs.html',graph1=script,title='Graphs viewer')#,rrS=script,graph1=div,graph2=file_html(graph1,CDN,'plot1'),graph3=file_html(graph1,CDN,'plot1'),js_resources=js_resources,css_resources=css_resources)
             # return render_template('graphs.html', graph=html)
 
-        return render_template('index.html', form=form,title='Huawei profil')
+        return render_template('index.html', form=form,title='Huawei Profile')
 
     @flask_sijax.route(app,'/scenario')
     def coucou():
         form = GlobalScenarioForm()
         if form.is_submitted():
             link = form.lp
+            #proxyAddr = {'https':'https://xndecaux:jJ6zrhtp@10.101.13.57:8080','http':'http://xndecaux:jJ6zrhtp@10.101.13.57:8080'}
+            proxyAddr = {'https':'xndecaux@10.101.13.55:8080','http':'xndecaux@10.101.13.55:8080'}
             URL = "https://nominatim.openstreetmap.org/search"
             location = str(link.xe.data)
             #key = 'AIzaSyA3nLe6yUCTTMB82u1LTuWoyGJGvr8gBZg'
             location_detail = {'q': location,'format':'json'}
             if location != '':
-                r = requests.get(url=URL, params=location_detail)
+                s = requests.Session()
+                s.proxies= proxyAddr
+                r = s.get(url=URL, params=location_detail,proxies=proxyAddr,verify=False)
                 data = r.json()
                 latitude = float(data[0]['lat'])
                 longitude = float(data[0]['lon'])
@@ -1693,12 +1703,14 @@ if __name__ == '__main__':
         form = GlobalScenarioForm()
         if form.is_submitted():
             link = form.lp
+            proxyAddr = {'https':'xndecaux@10.101.13.55:8080','http':'xndecaux@10.101.13.55:8080'}
+
             URL = "https://nominatim.openstreetmap.org/search"
             location = str(link.xe.data)
             #key = 'AIzaSyA3nLe6yUCTTMB82u1LTuWoyGJGvr8gBZg'
             location_detail = {'q': location,'format':'json'}
             if location != '':
-                r = requests.get(url=URL, params=location_detail)
+                r = requests.get(url=URL, params=location_detail,proxies=proxyAddr,verify=False)
                 data = r.json()
                 latitude = float(data[0]['lat'])
                 longitude = float(data[0]['lon'])
@@ -1722,10 +1734,10 @@ if __name__ == '__main__':
             return render_template('tables.html',table=eb_stab,ex_tab=ex_tab,e_mw_tab=e_mw_tab,mw_stab=mw_stab,mw_xtab=mw_xtab,title='Ericsson scenario')
 
         return render_template('index.html',form=form,title='Ericsson scenario')
-
-
+    
     @flask_sijax.route(app, '/help')
     def help():
-        return render_template('help.html')
+        return render_template('help.html',title='Help - Link Budget')
 
-    app.run(host='0.0.0.0',port=80,debug=True)
+
+    app.run(host='0.0.0.0',port=5000,debug=True,threaded=True)

@@ -127,8 +127,8 @@ class MakeGraphE():
         table = self.db.table(self.equip)
         row = table.search((user.MODEL.search('(' + self.card + ')')) & (user.BAND_DESIGNATOR == float(self.freq)) & (
                     user.BANDWIDTH == float(self.bw)) & (user.MODULATION_TYPE == str(mod)))
-
-        return row[0]['TYP_RX_THRESHOLD3']
+        if self.xpic == "1" : return float(row[0]['TYP_RX_THRESHOLD3'])+float(row[0]['MOD_DOWNSHIFT_OFFSET'])
+        else : return row[0]['TYP_RX_THRESHOLD3']
 
 
 
@@ -235,14 +235,16 @@ class MakeGraphE():
         rx_thr = self.getRxThr(ref_mod)
         tx1 = self.getTx(ref_mod)
         res = list()
+        rsl = list()
         p=plt.figure(title='Availability according to the distance',x_axis_label = 'Distance (km)',y_axis_label = 'Availability')
         for dcrt in d:
             att_max = tx1 + g1a + g1b - float(rx_thr) - 20 * np.log10((4 * self.pi * dcrt * 1000) / self.wl)
+            rsl.append(att_max+float(rx_thr))
             val = float()
             val = itur.models.itu530.inverse_rain_attenuation(geoloc[0], geoloc[1], dcrt, freq, el, att_max, tau,rr).value
             val = 100 - round(val, 5)
             res.append(val)
-        return dict(x=d,y=res,freq=np.full(1999,freq))
+        return dict(x=d,y=res,rsl=rsl)
 
 
 
