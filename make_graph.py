@@ -247,6 +247,9 @@ class MakeGraph():
         res = list()
         p=plt.figure(title='Availability according to the distance',x_axis_label = 'Distance (km)',y_axis_label = 'Availability')
         for dcrt in d:
+
+            #d_t = itur.models.itu530.inverse_rain_attenuation(geoloc[0], geoloc[1], str(dcrt)+'_test', freq, el, 0, tau,rr).value
+            #print('d = '+str(dcrt)+'; d_t = '+str(d_t))
             att_max = tx1 + g1a + g1b - float(rx_thr) - 20 * np.log10((4 * self.pi * dcrt * 1000) / self.wl)
             val = float()
             val = itur.models.itu530.inverse_rain_attenuation(geoloc[0], geoloc[1], dcrt, freq, el, att_max, tau,rr).value

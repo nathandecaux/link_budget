@@ -38,6 +38,7 @@ GAIN1 = 0
 GAIN2 = 0
 pi = scipy.constants.pi
 test=0
+am = False
 
 
 class SingleTable(Table):
@@ -107,21 +108,25 @@ def getAntGain(dia,freq):
 def getProfilperCapa(capa=0,xpic=False,eband=False,multiB=False):
     profils = list()
     user = tinydb.Query()
-    db = tinydb.TinyDB('db_ericsson_AM.json')
+    db = ''
+    if am : db = tinydb.TinyDB('db_ericsson_AM.json')
+    else : db = tinydb.TinyDB('db_ericsson.json')
 
     for table in db.tables():
         for row in db.table(table):
+            offset = 0
+            if am: offset = float(row['MOD_DOWNSHIFT_OFFSET'])
+
             if capa>0 and np.isclose(float(row['CAPACITY']),capa,atol=MARG):
                 profils.append([row['MODEL'],row['MODULATION_TYPE'], row['BAND_DESIGNATOR'], row['MAX_TX_POWER'], row['CAPACITY'],
-                                            row['TYP_RX_THRESHOLD3']])
-
+                                            float(row['TYP_RX_THRESHOLD3'])+offset])
 
             if eband and row['BAND_DESIGNATOR']==80:
                 profils.append([row['MODEL'],row['MODULATION_TYPE'],row['BAND_DESIGNATOR'], row['MAX_TX_POWER'], row['CAPACITY'],
-                                row['TYP_RX_THRESHOLD3']])
+                                float(row['TYP_RX_THRESHOLD3'])+offset])
             if not eband and row['BAND_DESIGNATOR']!=80 :
                 profils.append([row['MODEL'],row['MODULATION_TYPE'], row['BAND_DESIGNATOR'], row['MAX_TX_POWER'], row['CAPACITY'],
-                                row['TYP_RX_THRESHOLD3']])
+                                float(row['TYP_RX_THRESHOLD3'])+offset])
 
 
                     #profils.append()

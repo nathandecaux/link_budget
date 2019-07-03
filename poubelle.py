@@ -38,6 +38,7 @@ GAIN1 = 0
 GAIN2 = 0
 pi = scipy.constants.pi
 test=0
+am = False
 
 class SingleTable(Table):
     ref = Col('Metric',th_html_attrs={'style':"display:none;"},td_html_attrs={'style':"display:none;"})
@@ -115,7 +116,7 @@ def getProfilperCapa(capa=0,xpic=False,eband=False,multiB=False):
         else: tab_str = 'RTN900'
         for row in db.table(tab_str):
             offset = row['ACM_DROP_OFFSET']
-            if offset == '' : offset =0.0
+            if offset == '' or not am: offset =0.0
             profils.append([row['MODEL'], row['BAND_DESIGNATOR'], row['MAX_TX_POWER'], row['CAPACITY'],
                                     row['TYP_RX_THRESHOLD3'] + offset])
     else:
@@ -124,7 +125,7 @@ def getProfilperCapa(capa=0,xpic=False,eband=False,multiB=False):
             table = db.table(str(tab))
             for row in table:
                 offset = row['ACM_DROP_OFFSET']
-                if offset == '': offset = 0.0
+                if offset == '' or not am: offset = 0.0
                 if(np.isclose(row['CAPACITY'],float(capa),atol=MARG)):
                     profils.append([row['MODEL'],row['BAND_DESIGNATOR'],row['MAX_TX_POWER'],row['CAPACITY'],row['TYP_RX_THRESHOLD3']+ offset])
 

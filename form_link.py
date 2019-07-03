@@ -1117,7 +1117,8 @@ def main():
                 rr = float(link.rre.data)
             tau = float(link.polar.data) # float(form.polar.data)
             # rr = float(rp.rre.data)
-            p0 = 100 - float(link.p_entry.data)
+            p0 = 99.99
+            if (link.p_entry.data!= None) : p0 = 100 - float(link.p_entry.data)
             xpic = ep.cb0.data
             equip = ep.cb1.data
             freq = float(ep.fe.data)
@@ -1681,10 +1682,15 @@ def main():
             poubelle.DIA1 = float(link.gae.data)
             poubelle.DIA2 = float(link.gbe.data)
             poubelle.ELEVATION = float(link.ele.data)
-            if form.sp.peak.data != None and form.sp.avaiPIR.data:
-                poubelle.PIR = float(form.sp.peak.data)
-                poubelle.AVAI_PIR = float(form.sp.avaiPIR.data)
-            else: poubelle.PIR = 0.0
+            if form.sp.am.data == '1':
+                if form.sp.peak.data != None and form.sp.avaiPIR.data:
+                    poubelle.PIR = float(form.sp.peak.data)
+                    poubelle.AVAI_PIR = float(form.sp.avaiPIR.data)
+                else: poubelle.PIR = 0.0
+                poubelle.am = True
+            else:
+                poubelle.PIR = 0.0
+                poubelle.am = False
 
 
             poubelle.MARG = float(form.sp.margin.data)
@@ -1719,10 +1725,16 @@ def main():
             poubelle_2.DIA2 = float(link.gbe.data)
             poubelle_2.ELEVATION = float(link.ele.data)
 
-            if form.sp.peak.data != None and form.sp.avaiPIR.data!=None:
-                poubelle_2.PIR = float(form.sp.peak.data)
-                poubelle_2.AVAI_PIR = float(form.sp.avaiPIR.data)
-            else: poubelle_2.PIR = 0.0
+            if form.sp.am.data == '1':
+                if form.sp.peak.data != None and form.sp.avaiPIR.data:
+                    poubelle_2.PIR = float(form.sp.peak.data)
+                    poubelle_2.AVAI_PIR = float(form.sp.avaiPIR.data)
+                else:
+                    poubelle_2.PIR = 0.0
+                poubelle_2.am = True
+            else:
+                poubelle_2.PIR = 0.0
+                poubelle_2.am = False
 
             poubelle_2.MARG = float(form.sp.margin.data)
             poubelle_2.POLAR = 0 if link.polar.data=='h' else 90 # float(form.polar.data)
@@ -1734,10 +1746,13 @@ def main():
             return render_template('tables.html',table=eb_stab,ex_tab=ex_tab,e_mw_tab=e_mw_tab,mw_stab=mw_stab,mw_xtab=mw_xtab,title='Ericsson scenario')
 
         return render_template('index.html',form=form,title='Ericsson scenario')
-    
+
     @flask_sijax.route(app, '/help')
     def help():
         return render_template('help.html',title='Help - Link Budget')
 
 
     app.run(host='0.0.0.0',port=5000,debug=True,threaded=True)
+
+if __name__== '__main__':
+    main()
