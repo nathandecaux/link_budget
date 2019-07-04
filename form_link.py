@@ -1,6 +1,6 @@
 import socket
 
-from flask import Flask, render_template, flash,redirect,request,g
+from flask import Flask, render_template, flash, redirect, request, g, url_for
 from flask_bootstrap import Bootstrap
 from bokeh.server.server import Server,BaseServer
 from tornado.ioloop import IOLoop
@@ -19,7 +19,8 @@ from wtforms.validators import Required
 import bokeh.plotting as plt
 from bokeh.resources import INLINE
 from bokeh.util.browser import view
-from bokeh.models import Plot,Tool,HoverTool,Slider,WidgetBox,Button,Select,TextInput,Spinner,Legend,LegendItem,Div,Markup,CustomJS,Line
+from bokeh.models import Plot, Tool, HoverTool, Slider, WidgetBox, Button, Select, TextInput, Spinner, Legend, \
+    LegendItem, Div, Markup, CustomJS, Line, Paragraph
 from bokeh.resources import CDN
 from bokeh.embed import file_html,components,server_document
 import scipy.constants
@@ -95,27 +96,50 @@ class SelectFieldNoValidation(SelectField):
         pass
 
 class LinkForm(Form):
+    err = HiddenField()
     gae = SelectField('Antenna Diameter A (m)',choices =[('0.3','0.3'),('0.6','0.6'),('0.9','0.9'),('1.2','1.2'),('1.8','1.8'),('2.4','2.4')])
     gbe = SelectField('Antenna Diameter B (m)',choices =[('0.3','0.3'),('0.6','0.6'),('0.9','0.9'),('1.2','1.2'),('1.8','1.8'),('2.4','2.4')])
-    ele = DecimalField('Rx Antenna Elevation (degrees)')
+    ele = StringField('Rx Antenna Elevation (degrees)')
     polar = SelectField('Polar',choices=[('0', 'Horizontal'), ('90', 'Vertical')])
-    p_entry = DecimalField('Availability ( %/year )')
+    p_entry = StringField('Availability ( %/year )')
     xe = StringField('Site Location (Address)')
-    rre = DecimalField('Rainrate (mm/h)')
+    rre = StringField('Rainrate (mm/h)')
+    def validate(self):
+        check = True
+        self.ele.data = str(self.ele.data).replace(',','.')
+        if not str(self.ele.data).replace('.','').isdigit() and str(self.ele.data) != '' : check=False
+
+        self.p_entry.data = str(self.p_entry.data).replace(',', '.')
+        if not str(self.p_entry.data).replace('.','').isdigit() and str(self.p_entry.data) != '': check=False
+
+        self.rre.data = str(self.rre.data).replace(',', '.')
+        if not str(self.rre.data).replace('.', '').isdigit() and str(self.rre.data) != '': check=False
+        print(check)
+        return check
+
+
+
+
 
 
 class EquipFormEric(Form):
-    cb0 = SelectField('Adaptative Modulation', choices=[('3','----'),('1', 'Yes'), ('0', 'No')],)
-    cb1 = SelectField('Equipment',choices=[('0', '----')])#[('0', '----')],validators=())
+    cb0 = SelectField('Adaptative Modulation', choices=[('3','----'),('1', 'Yes'), ('0', 'No')])
+    cb1 = SelectField('Equipment',choices=[('0', '----')]) #[('0', '----')],validators=())
     fe = SelectField('Frequency (GHz)',choices=[('0', '----')])
     carde = SelectField('Modem Card',choices=[('0', '----')])
     cpe = SelectField('Bandwidth (MHz)',choices=[('0', '----')])
     ref_mod = SelectField('Reference Modulation (Only for "Availability / Distance" graph)', choices=[('0', '----')])
     def validate(self):
-        return True
+        check = True
+        if self.cb0.data == '----' : check = False
+        if self.cb1.data == '----': check = False
+        if self.fe.data == '----': check = False
+        if self.carde.data == '----': check = False
+        if self.cpe.data == '----': check = False
+        return check
 
 class EquipForm(Form):
-    cb0 = SelectField('XPIC', choices=[('3','----'),('1', 'Yes'), ('0', 'No')],)
+    cb0 = SelectField('XPIC', choices=[('3','----'),('1', 'Yes'), ('0', 'No')])
     cb1 = SelectField('Equipment',choices=[('0', '----')])#[('0', '----')],validators=())
     fe = SelectField('Frequency (GHz)',choices=[('0', '----')])
     carde = SelectField('Modem Card + ODU',choices=[('0', '----')])
@@ -123,15 +147,43 @@ class EquipForm(Form):
     ref_mod = SelectField('Reference Modulation (Only for "Availability / Distance" graph)', choices=[('0', '----')])
     am = SelectField('Adaptative Modulation', choices=[('3','----'),('1', 'Yes'), ('0', 'No')])
     def validate(self):
-        return True
+        check = True
+        if self.cb0.data == '----': check = False
+        if self.cb1.data == '----': check = False
+        if self.fe.data == '----': check = False
+        if self.carde.data == '----': check = False
+        if self.cpe.data == '----': check = False
+        return check
 
 class ScenarioForm(Form):
-    dist = DecimalField('Distance (km)')
-    capa = DecimalField('Capacity (Mbps)')
-    margin = DecimalField('Margin (Mbps)')
+    dist = StringField('Distance (km)')
+    capa = StringField('Capacity (Mbps)')
+    margin = StringField('Margin (Mbps)')
     am = SelectField('Adaptative Modulation', choices=[('0', 'No'),('1', 'Yes')])
-    peak = DecimalField('PIR (Mbps)')
-    avaiPIR = DecimalField('Availability PIR ( %/year )')
+    peak = StringField('PIR (Mbps)')
+    avaiPIR = StringField('Availability PIR ( %/year )')
+
+    def validate(self):
+        check = True
+        self.dist.data = str(self.dist.data).replace(',', '.')
+        if not str(self.dist.data).replace('.', '').isdigit():
+            check = False
+        self.capa.data = str(self.capa.data).replace(',', '.')
+        if not str(self.capa.data).replace('.', '').isdigit():
+            check = False
+        self.margin.data = str(self.margin.data).replace(',', '.')
+        if not str(self.margin.data).replace('.', '').isdigit():
+            check = False
+        self.peak.data = str(self.peak.data).replace(',', '.')
+        if not str(self.peak.data).replace('.', '').isdigit() and str(self.peak.data) != '':
+            check = False
+        self.avaiPIR.data = str(self.avaiPIR.data).replace(',', '.')
+        if not str(self.avaiPIR.data).replace('.', '').isdigit() and str(self.avaiPIR.data) != '':
+            check = False
+        return check
+
+
+
     
 
 class GlobalScenarioForm(Form):
@@ -143,9 +195,15 @@ class MetricForm(Form):
     modp = BooleanField('Capacity / Distance')
     availp = BooleanField('Availability / Distance')
     rainp = BooleanField('Capacity / Availability')
-    dist = DecimalField('Distance (km)')
+    dist = StringField('Distance (km)')
     def validate(self):
-        return True
+        check = True
+        if(not (self.modp.data or self.availp.data or self.rainp.data)):
+            check = False
+        self.dist.data = str(self.dist.data).replace(',','.')
+        if not str(self.dist.data).replace('.', '').isdigit() and str(self.dist.data) != '':
+            check=False
+        return check
 class GlobalForm(Form):
     lp = FormField(LinkForm,label="Link Profile")
     ep = FormField(EquipForm, label="Equipment Profile")
@@ -194,7 +252,7 @@ def main():
                         obj_response.html_append('#ep-cb1', '<option id='+str(i)+' value='+str(val)+' >'+val+'</option>')
                     choix.append((str(val)))
                     i=i+1
-            form.ep.cb1.choices = choix
+            form.ep.cb1.validators = validators.NoneOf(choix)
             choices_po['cb1']=choix
             return choix
 
@@ -315,7 +373,7 @@ def main():
 
             if str(obj_response) != 'None':
                 obj_response.html('#ep-ref_mod','')
-                obj_response.html_append('#ep-ref_mod', '<option>----</option>')
+                obj_response.html_append('#ep-ref_mod', '<option value="0">----</option>')
             if xpic == '1':
                 db = tinydb.TinyDB('db_ericsson_AM.json')
 
@@ -372,11 +430,16 @@ def main():
 
             js_resources = INLINE.render_js()
             css_resources = INLINE.render_css()
-            if link.xe.data != '':
+            if link.xe.data != '' and link.rre.data == '':
                 location = str(link.xe.data)
                 # key = 'AIzaSyA3nLe6yUCTTMB82u1LTuWoyGJGvr8gBZg'
                 location_detail = {'q': location, 'format': 'json'}
-                r = requests.get(url=URL, params=location_detail,proxies=proxyAddr,verify=False)
+                r = ''
+                try:
+                    r = requests.get(url=URL, params=location_detail, proxies=proxyAddr, verify=False, timeout=5)
+                except:
+                    para = Paragraph(text="""An error as been detected while requesting geocoding for site location.Please check your internet connection or that you provided a correct address""")
+                    return doc.add_root(para)
                 data = r.json()
                 latitude = float(data[0]['lat'])
                 longitude = float(data[0]['lon'])
@@ -386,8 +449,8 @@ def main():
             else:
                 rr = float(link.rre.data)
             tau = float(link.polar.data) # float(form.polar.data)
-            
-            p0 = 100 - float(link.p_entry.data)
+            p0 = 99.99
+            if (link.p_entry.data != None): p0 = 100 - float(link.p_entry.data)
             xpic = ep.cb0.data
             equip = ep.cb1.data
             freq = float(ep.fe.data)
@@ -396,7 +459,7 @@ def main():
             ref_mod = ep.ref_mod.data
             g1a = poubelle.getAntGain(d1a, freq)
             g1b = poubelle.getAntGain(d1b, freq)
-            if form.mf.dist.data != None:
+            if form.mf.dist.data != '':
                 dist = float(form.mf.dist.data)
             # items = SingleItem(d1a, d1b, el, rr, tau, p0, xpic, equip, freq, card, bw, ref_mod)
             # table = SingleTable([items], classes=['table table-striped'])
@@ -902,12 +965,15 @@ def main():
             server = Server({'/bkapp2': bkapp2},port=session_port,io_loop=IOLoop(), allow_websocket_origin=[addr+':5000'])
             server.start()
             server.io_loop.start()
-
         if form.is_submitted():
-            Thread(target=bk_worker).start()
-            script = server_document('http://'+addr+':'+str(session_port)+'/bkapp2')
-            return render_template('graphs.html',graph1=script,title='Graphs viewer')#,rrS=script,graph1=div,graph2=file_html(graph1,CDN,'plot1'),graph3=file_html(graph1,CDN,'plot1'),js_resources=js_resources,css_resources=css_resources)
+            if form.validate():
+                Thread(target=bk_worker).start()
+                script = server_document('http://'+addr+':'+str(session_port)+'/bkapp2')
+                return render_template('graphs.html',graph1=script,title='Graphs viewer')#,rrS=script,graph1=div,graph2=file_html(graph1,CDN,'plot1'),graph3=file_html(graph1,CDN,'plot1'),js_resources=js_resources,css_resources=css_resources)
             # return render_template('graphs.html', graph=html)
+            else:
+                flash(u'Something is wrong in the form','error')
+
 
         return render_template('index.html', form=form,title='Ericsson Profile')
 
@@ -919,7 +985,7 @@ def main():
             db = tinydb.TinyDB('db_huawei.json')
             if obj_response!=None:
                 obj_response.html('#ep-cb1','')
-                obj_response.html_append('#ep-cb1', '<option>----</option>')
+                obj_response.html_append('#ep-cb1', '<option value="0">----</option>')
             if xpic == '1':
                 db = tinydb.TinyDB('db_huawei_XPIC.json')
 
@@ -1098,22 +1164,29 @@ def main():
 
             URL = "https://nominatim.openstreetmap.org/search"
             geoloc = (0, 0)
-            if form.mf.dist.data != None:
+            if form.mf.dist.data != '':
                 dist = float(form.mf.dist.data)
             js_resources = INLINE.render_js()
             css_resources = INLINE.render_css()
-            if link.xe.data != '':
+            if link.xe.data != '' and link.rre.data == '':
                 location = str(link.xe.data)
                 # key = 'AIzaSyA3nLe6yUCTTMB82u1LTuWoyGJGvr8gBZg'
                 location_detail = {'q': location, 'format': 'json'}
-                r = requests.get(url=URL, params=location_detail,proxies=proxyAddr,verify=False)
+                r=''
+                try:
+                    r = requests.get(url=URL, params=location_detail,proxies=proxyAddr,verify=False,timeout=5)
+                except:
+                    para = Paragraph(text="""An error as been detected while requesting geocoding for site location.Please check your internet connection or that you provided a correct address""",
+                    )
+                    return doc.add_root(para)
+
                 data = r.json()
                 latitude = float(data[0]['lat'])
                 longitude = float(data[0]['lon'])
                 geoloc = (latitude, longitude)
                 itur.models.itu837.change_version(6)
                 rr = itur.models.itu837.rainfall_rate(latitude, longitude, 0.01).value
-            else:
+            if link.rre.data != '':
                 rr = float(link.rre.data)
             tau = float(link.polar.data) # float(form.polar.data)
             # rr = float(rp.rre.data)
@@ -1653,10 +1726,13 @@ def main():
 
         if form.is_submitted():
             from threading import Thread
-            Thread(target=bk_worker).start()
-            script = server_document('http://'+addr+':'+str(session_port)+'/bkapp')
-            return render_template('graphs.html',graph1=script,title='Graphs viewer')#,rrS=script,graph1=div,graph2=file_html(graph1,CDN,'plot1'),graph3=file_html(graph1,CDN,'plot1'),js_resources=js_resources,css_resources=css_resources)
+            if form.validate():
+                Thread(target=bk_worker).start()
+                script = server_document('http://'+addr+':'+str(session_port)+'/bkapp')
+                return render_template('graphs.html',graph1=script,title='Graphs viewer')#,rrS=script,graph1=div,graph2=file_html(graph1,CDN,'plot1'),graph3=file_html(graph1,CDN,'plot1'),js_resources=js_resources,css_resources=css_resources)
             # return render_template('graphs.html', graph=html)
+            else:
+                flash(u'Something is wrong in the form','error')
 
         return render_template('index.html', form=form,title='Huawei Profile')
 
@@ -1664,43 +1740,50 @@ def main():
     def coucou():
         form = GlobalScenarioForm()
         if form.is_submitted():
-            link = form.lp
-            #proxyAddr = {'https':'https://xndecaux:jJ6zrhtp@10.101.13.57:8080','http':'http://xndecaux:jJ6zrhtp@10.101.13.57:8080'}
-            proxyAddr = {'https':'xndecaux@10.101.13.55:8080','http':'xndecaux@10.101.13.55:8080'}
-            URL = "https://nominatim.openstreetmap.org/search"
-            location = str(link.xe.data)
-            #key = 'AIzaSyA3nLe6yUCTTMB82u1LTuWoyGJGvr8gBZg'
-            location_detail = {'q': location,'format':'json'}
-            if location != '':
-                s = requests.Session()
-                s.proxies= proxyAddr
-                r = s.get(url=URL, params=location_detail,proxies=proxyAddr,verify=False)
-                data = r.json()
-                latitude = float(data[0]['lat'])
-                longitude = float(data[0]['lon'])
-                poubelle.GEOLOCATE = (latitude, longitude)
-            poubelle.DIA1 = float(link.gae.data)
-            poubelle.DIA2 = float(link.gbe.data)
-            poubelle.ELEVATION = float(link.ele.data)
-            if form.sp.am.data == '1':
-                if form.sp.peak.data != None and form.sp.avaiPIR.data:
-                    poubelle.PIR = float(form.sp.peak.data)
-                    poubelle.AVAI_PIR = float(form.sp.avaiPIR.data)
-                else: poubelle.PIR = 0.0
-                poubelle.am = True
+            if form.validate():
+                link = form.lp
+                proxyAddr = {'https':'xndecaux@10.101.13.55:8080','http':'xndecaux@10.101.13.55:8080'}
+                URL = "https://nominatim.openstreetmap.org/search"
+                location = str(link.xe.data)
+                #key = 'AIzaSyA3nLe6yUCTTMB82u1LTuWoyGJGvr8gBZg'
+                location_detail = {'q': location,'format':'json'}
+                if location != '' and link.rre.data == '':
+                    s = requests.Session()
+                    s.proxies= proxyAddr
+                    try:
+                        r = requests.get(url=URL, params=location_detail, proxies=proxyAddr, verify=False, timeout=5)
+                    except:
+                        para ="""<p style="color:red">An error as been detected while requesting geocoding for site location.Please check your internet connection or that you provided a correct address</p>"""
+
+                        return render_template('graphs.html',graph1=para)
+                    data = r.json()
+                    latitude = float(data[0]['lat'])
+                    longitude = float(data[0]['lon'])
+                    poubelle.GEOLOCATE = (latitude, longitude)
+                poubelle.DIA1 = float(link.gae.data)
+                poubelle.DIA2 = float(link.gbe.data)
+                poubelle.ELEVATION = float(link.ele.data)
+                if form.sp.am.data == '1':
+                    if form.sp.peak.data != None and form.sp.avaiPIR.data:
+                        poubelle.PIR = float(form.sp.peak.data)
+                        poubelle.AVAI_PIR = float(form.sp.avaiPIR.data)
+                    else: poubelle.PIR = 0.0
+                    poubelle.am = True
+                else:
+                    poubelle.PIR = 0.0
+                    poubelle.am = False
+
+
+                poubelle.MARG = float(form.sp.margin.data)
+                poubelle.POLAR = 0 if link.polar.data=='h' else 90 # float(form.polar.data)
+                if link.rre.data != None:
+                    poubelle.RR = float(link.rre.data)
+                poubelle.AVAILABILITY  = float(link.p_entry.data)
+                poubelle.CIR = float(form.sp.capa.data)
+                [eb_stab,ex_tab,e_mw_tab,mw_stab,mw_xtab] = poubelle.getScenarii(0,float(form.sp.capa.data),float(link.p_entry.data))
+                return render_template('tables.html',table=eb_stab,ex_tab=ex_tab,e_mw_tab=e_mw_tab,mw_stab=mw_stab,mw_xtab=mw_xtab,title='Huawei scenario')
             else:
-                poubelle.PIR = 0.0
-                poubelle.am = False
-
-
-            poubelle.MARG = float(form.sp.margin.data)
-            poubelle.POLAR = 0 if link.polar.data=='h' else 90 # float(form.polar.data)
-            if link.rre.data != None:
-                poubelle.RR = float(link.rre.data)
-            poubelle.AVAILABILITY  = float(link.p_entry.data)
-            poubelle.CIR = float(form.sp.capa.data)
-            [eb_stab,ex_tab,e_mw_tab,mw_stab,mw_xtab] = poubelle.getScenarii(0,float(form.sp.capa.data),float(link.p_entry.data))
-            return render_template('tables.html',table=eb_stab,ex_tab=ex_tab,e_mw_tab=e_mw_tab,mw_stab=mw_stab,mw_xtab=mw_xtab,title='Huawei scenario')
+                flash(u'Something is wrong in the form','error')
 
         return render_template('index.html',form=form,title='Huawei scenario')
 
@@ -1708,42 +1791,51 @@ def main():
     def scenarEric():
         form = GlobalScenarioForm()
         if form.is_submitted():
-            link = form.lp
-            proxyAddr = {'https':'xndecaux@10.101.13.55:8080','http':'xndecaux@10.101.13.55:8080'}
+            if form.validate():
+                link = form.lp
+                proxyAddr = {'https':'xndecaux@10.101.13.55:8080','http':'xndecaux@10.101.13.55:8080'}
 
-            URL = "https://nominatim.openstreetmap.org/search"
-            location = str(link.xe.data)
-            #key = 'AIzaSyA3nLe6yUCTTMB82u1LTuWoyGJGvr8gBZg'
-            location_detail = {'q': location,'format':'json'}
-            if location != '':
-                r = requests.get(url=URL, params=location_detail,proxies=proxyAddr,verify=False)
-                data = r.json()
-                latitude = float(data[0]['lat'])
-                longitude = float(data[0]['lon'])
-                poubelle_2.GEOLOCATE = (latitude, longitude)
-            poubelle_2.DIA1 = float(link.gae.data)
-            poubelle_2.DIA2 = float(link.gbe.data)
-            poubelle_2.ELEVATION = float(link.ele.data)
+                URL = "https://nominatim.openstreetmap.org/search"
+                location = str(link.xe.data)
+                #key = 'AIzaSyA3nLe6yUCTTMB82u1LTuWoyGJGvr8gBZg'
+                location_detail = {'q': location,'format':'json'}
+                if location != '' and link.rre.data == '':
+                    s = requests.Session()
+                    s.proxies = proxyAddr
+                    try:
+                        r = requests.get(url=URL, params=location_detail, proxies=proxyAddr, verify=False, timeout=5)
+                    except:
+                        para = """<p style="color:red">An error as been detected while requesting geocoding for site location.Please check your internet connection or that you provided a correct address</p>"""
+                        return render_template('graphs.html', graph1=para)
+                    data = r.json()
+                    latitude = float(data[0]['lat'])
+                    longitude = float(data[0]['lon'])
+                    poubelle_2.GEOLOCATE = (latitude, longitude)
+                poubelle_2.DIA1 = float(link.gae.data)
+                poubelle_2.DIA2 = float(link.gbe.data)
+                poubelle_2.ELEVATION = float(link.ele.data)
 
-            if form.sp.am.data == '1':
-                if form.sp.peak.data != None and form.sp.avaiPIR.data:
-                    poubelle_2.PIR = float(form.sp.peak.data)
-                    poubelle_2.AVAI_PIR = float(form.sp.avaiPIR.data)
+                if form.sp.am.data == '1':
+                    if form.sp.peak.data != None and form.sp.avaiPIR.data:
+                        poubelle_2.PIR = float(form.sp.peak.data)
+                        poubelle_2.AVAI_PIR = float(form.sp.avaiPIR.data)
+                    else:
+                        poubelle_2.PIR = 0.0
+                    poubelle_2.am = True
                 else:
                     poubelle_2.PIR = 0.0
-                poubelle_2.am = True
-            else:
-                poubelle_2.PIR = 0.0
-                poubelle_2.am = False
+                    poubelle_2.am = False
 
-            poubelle_2.MARG = float(form.sp.margin.data)
-            poubelle_2.POLAR = 0 if link.polar.data=='h' else 90 # float(form.polar.data)
-            if link.rre.data != None:
-                poubelle_2.RR = float(link.rre.data)
-            poubelle_2.AVAILABILITY  = float(link.p_entry.data)
-            poubelle_2.CIR = float(form.sp.capa.data)
-            [eb_stab,ex_tab,e_mw_tab,mw_stab,mw_xtab] = poubelle_2.getScenarii(0,float(form.sp.capa.data),float(link.p_entry.data))
-            return render_template('tables.html',table=eb_stab,ex_tab=ex_tab,e_mw_tab=e_mw_tab,mw_stab=mw_stab,mw_xtab=mw_xtab,title='Ericsson scenario')
+                poubelle_2.MARG = float(form.sp.margin.data)
+                poubelle_2.POLAR = 0 if link.polar.data=='h' else 90 # float(form.polar.data)
+                if link.rre.data != None:
+                    poubelle_2.RR = float(link.rre.data)
+                poubelle_2.AVAILABILITY  = float(link.p_entry.data)
+                poubelle_2.CIR = float(form.sp.capa.data)
+                [eb_stab,ex_tab,e_mw_tab,mw_stab,mw_xtab] = poubelle_2.getScenarii(0,float(form.sp.capa.data),float(link.p_entry.data))
+                return render_template('tables.html',table=eb_stab,ex_tab=ex_tab,e_mw_tab=e_mw_tab,mw_stab=mw_stab,mw_xtab=mw_xtab,title='Ericsson scenario')
+            else:
+                flash(u'Something is wrong in the form','error')
 
         return render_template('index.html',form=form,title='Ericsson scenario')
 
