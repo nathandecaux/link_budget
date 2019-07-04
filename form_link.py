@@ -435,18 +435,21 @@ def main():
                 # key = 'AIzaSyA3nLe6yUCTTMB82u1LTuWoyGJGvr8gBZg'
                 location_detail = {'q': location, 'format': 'json'}
                 r = ''
+
                 try:
                     r = requests.get(url=URL, params=location_detail, proxies=proxyAddr, verify=False, timeout=5)
+                    data = r.json()
+                    latitude = float(data[0]['lat'])
+                    longitude = float(data[0]['lon'])
+                    geoloc = (latitude, longitude)
+                    itur.models.itu837.change_version(6)
+                    rr = itur.models.itu837.rainfall_rate(latitude, longitude, 0.01).value
                 except:
                     para = Paragraph(text="""An error as been detected while requesting geocoding for site location.Please check your internet connection or that you provided a correct address""")
                     return doc.add_root(para)
-                data = r.json()
-                latitude = float(data[0]['lat'])
-                longitude = float(data[0]['lon'])
-                geoloc = (latitude, longitude)
-                itur.models.itu837.change_version(6)
-                rr = itur.models.itu837.rainfall_rate(latitude, longitude, 0.01).value
-            else:
+
+
+            if link.rre.data != '':
                 rr = float(link.rre.data)
             tau = float(link.polar.data) # float(form.polar.data)
             p0 = 99.99
@@ -1175,17 +1178,18 @@ def main():
                 r=''
                 try:
                     r = requests.get(url=URL, params=location_detail,proxies=proxyAddr,verify=False,timeout=5)
+                    data = r.json()
+                    latitude = float(data[0]['lat'])
+                    longitude = float(data[0]['lon'])
+                    geoloc = (latitude, longitude)
+                    itur.models.itu837.change_version(6)
+                    rr = itur.models.itu837.rainfall_rate(latitude, longitude, 0.01).value
                 except:
                     para = Paragraph(text="""An error as been detected while requesting geocoding for site location.Please check your internet connection or that you provided a correct address""",
                     )
                     return doc.add_root(para)
 
-                data = r.json()
-                latitude = float(data[0]['lat'])
-                longitude = float(data[0]['lon'])
-                geoloc = (latitude, longitude)
-                itur.models.itu837.change_version(6)
-                rr = itur.models.itu837.rainfall_rate(latitude, longitude, 0.01).value
+
             if link.rre.data != '':
                 rr = float(link.rre.data)
             tau = float(link.polar.data) # float(form.polar.data)
@@ -1752,14 +1756,15 @@ def main():
                     s.proxies= proxyAddr
                     try:
                         r = requests.get(url=URL, params=location_detail, proxies=proxyAddr, verify=False, timeout=5)
+                        data = r.json()
+                        latitude = float(data[0]['lat'])
+                        longitude = float(data[0]['lon'])
+                        poubelle.GEOLOCATE = (latitude, longitude)
                     except:
                         para ="""<p style="color:red">An error as been detected while requesting geocoding for site location.Please check your internet connection or that you provided a correct address</p>"""
 
                         return render_template('graphs.html',graph1=para)
-                    data = r.json()
-                    latitude = float(data[0]['lat'])
-                    longitude = float(data[0]['lon'])
-                    poubelle.GEOLOCATE = (latitude, longitude)
+
                 poubelle.DIA1 = float(link.gae.data)
                 poubelle.DIA2 = float(link.gbe.data)
                 poubelle.ELEVATION = float(link.ele.data)
@@ -1776,7 +1781,7 @@ def main():
 
                 poubelle.MARG = float(form.sp.margin.data)
                 poubelle.POLAR = 0 if link.polar.data=='h' else 90 # float(form.polar.data)
-                if link.rre.data != None:
+                if link.rre.data != '':
                     poubelle.RR = float(link.rre.data)
                 poubelle.AVAILABILITY  = float(link.p_entry.data)
                 poubelle.CIR = float(form.sp.capa.data)
@@ -1804,13 +1809,14 @@ def main():
                     s.proxies = proxyAddr
                     try:
                         r = requests.get(url=URL, params=location_detail, proxies=proxyAddr, verify=False, timeout=5)
+                        data = r.json()
+                        latitude = float(data[0]['lat'])
+                        longitude = float(data[0]['lon'])
+                        poubelle_2.GEOLOCATE = (latitude, longitude)
                     except:
                         para = """<p style="color:red">An error as been detected while requesting geocoding for site location.Please check your internet connection or that you provided a correct address</p>"""
                         return render_template('graphs.html', graph1=para)
-                    data = r.json()
-                    latitude = float(data[0]['lat'])
-                    longitude = float(data[0]['lon'])
-                    poubelle_2.GEOLOCATE = (latitude, longitude)
+
                 poubelle_2.DIA1 = float(link.gae.data)
                 poubelle_2.DIA2 = float(link.gbe.data)
                 poubelle_2.ELEVATION = float(link.ele.data)
@@ -1828,7 +1834,7 @@ def main():
 
                 poubelle_2.MARG = float(form.sp.margin.data)
                 poubelle_2.POLAR = 0 if link.polar.data=='h' else 90 # float(form.polar.data)
-                if link.rre.data != None:
+                if link.rre.data != '':
                     poubelle_2.RR = float(link.rre.data)
                 poubelle_2.AVAILABILITY  = float(link.p_entry.data)
                 poubelle_2.CIR = float(form.sp.capa.data)
