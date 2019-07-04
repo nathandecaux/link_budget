@@ -1785,7 +1785,7 @@ def main():
                     poubelle.RR = float(link.rre.data)
                 poubelle.AVAILABILITY  = float(link.p_entry.data)
                 poubelle.CIR = float(form.sp.capa.data)
-                [eb_stab,ex_tab,e_mw_tab,mw_stab,mw_xtab] = poubelle.getScenarii(0,float(form.sp.capa.data),float(link.p_entry.data))
+                [eb_stab,ex_tab,e_mw_tab,mw_stab,mw_xtab] = poubelle.getScenarii(0,float(form.sp.capa.data),float(link.p_entry.data),float(form.sp.margin.data))
                 return render_template('tables.html',table=eb_stab,ex_tab=ex_tab,e_mw_tab=e_mw_tab,mw_stab=mw_stab,mw_xtab=mw_xtab,title='Huawei scenario')
             else:
                 flash(u'Something is wrong in the form','error')
@@ -1838,7 +1838,7 @@ def main():
                     poubelle_2.RR = float(link.rre.data)
                 poubelle_2.AVAILABILITY  = float(link.p_entry.data)
                 poubelle_2.CIR = float(form.sp.capa.data)
-                [eb_stab,ex_tab,e_mw_tab,mw_stab,mw_xtab] = poubelle_2.getScenarii(0,float(form.sp.capa.data),float(link.p_entry.data))
+                [eb_stab,ex_tab,e_mw_tab,mw_stab,mw_xtab] = poubelle_2.getScenarii(0,float(form.sp.capa.data),float(link.p_entry.data),float(form.sp.margin.data))
                 return render_template('tables.html',table=eb_stab,ex_tab=ex_tab,e_mw_tab=e_mw_tab,mw_stab=mw_stab,mw_xtab=mw_xtab,title='Ericsson scenario')
             else:
                 flash(u'Something is wrong in the form','error')

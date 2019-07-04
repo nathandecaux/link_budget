@@ -15,8 +15,10 @@
     $( document ).ready(function() {
     $("#lp-ele").attr('required', 'required');
     $("#lp-p_entry").attr('required', 'required')
-    $("#mf-dist").css('display', 'none');
-    $("label[for='mf-dist']").css('display','none')
+    if (!$("#mf-dist").is(':checked'))
+    {$("#mf-dist").css('display', 'none');
+    $("label[for='mf-dist']").css('display','none');
+    }
     if ($("#sp-am").val() == '0')
         {
           $("#sp-peak").val("");
@@ -144,6 +146,12 @@ function action()
     $bandw = $('#ep-cpe').val();
     Sijax.request('cpe',[$xpic,$equi,$freq,$card,$bandw]);});
 
+  $$("#sp-peak").change(function()
+    {
+    $bandw = $('#ep-cpe').val();
+    Sijax.request('cpe',[$xpic,$equi,$freq,$card,$bandw]);});
+
+
   $("#lp-rre").focus(function() {
         $("#lp-rre").removeAttr('readonly');
         $("#lp-xe").attr('value', '');
@@ -173,6 +181,7 @@ function action()
 
 
 </script>
+
 
 </div>
 </body>

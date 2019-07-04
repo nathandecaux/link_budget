@@ -149,7 +149,7 @@ def getProb(profs,d,p,rr,xpic=False):
             good_pro.append(prof)
     return good_pro
 
-def getScenarii(test,CIR,AVAILABILITY):
+def getScenarii(test,CIR,AVAILABILITY,MARG):
     rr = RR
     outstr = ''
     e_band_sitems = list()
@@ -252,9 +252,8 @@ def getScenarii(test,CIR,AVAILABILITY):
 
 
 def getScenariiPIR(goodCIR):
-    CIR = PIR
-    AVAILABILITY = AVAI_PIR
-    goodPIR = getScenarii(2, PIR, AVAI_PIR)
+    new_marg=(PIR*MARG)/CIR
+    goodPIR = getScenarii(2, PIR, AVAI_PIR,new_marg)
     final = dict()
     cur = []
     cur.append('pouet')
