@@ -453,7 +453,7 @@ def main():
                 rr = float(link.rre.data)
             tau = float(link.polar.data) # float(form.polar.data)
             p0 = 99.99
-            if (link.p_entry.data != None): p0 = 100 - float(link.p_entry.data)
+            if (link.p_entry.data != ''): p0 = 100 - float(link.p_entry.data)
             xpic = ep.cb0.data
             equip = ep.cb1.data
             freq = float(ep.fe.data)
@@ -560,8 +560,8 @@ def main():
                                                                         float(freqS.value), cardS.value,
                                                                         float(bwS.value), ref_mod, dS.value))
                     truc = Line(x='x', y='y', line_color=next(colors), line_width=2)
-                    graph1.add_glyph(curr_dat, truc)
-                    graph1.add_tools(HoverTool(tooltips=[
+                    curr_line = graph1.add_glyph(curr_dat, truc)
+                    hover = HoverTool(tooltips=[
                         ("Capacity", "@y"),
                         ("Availability", "@x"),
                         ("Gain A", str(g1a)),
@@ -573,7 +573,9 @@ def main():
                         ('Freq', str(freqS.value)),
                         ('Card', str(cardS.value)),
                         ('Bandwidth', str(bwS.value))
-                    ]))
+                    ])
+                    hover.renderers = [curr_line]
+                    graph1.add_tools(hover)
 
                 def xpicUp(attr, old, new):
                     equipS.options = list(cb0Ch(None, xpicS.value))
@@ -714,8 +716,8 @@ def main():
                                                                        cardS2.value, float(bwS2.value), ref_mod
                                                                        ))
                     truc = Line(x='x', y='y', line_color=next(colors), line_width=2, subscribed_events=["tap"])
-                    graph2.add_glyph(curr_dat, truc)
-                    graph2.add_tools(HoverTool(tooltips=[
+                    curr_line = graph2.add_glyph(curr_dat, truc)
+                    hover = HoverTool(tooltips=[
                         ("Capacity", "@y"),
                         ("Distance", "@x"),
                         ("Gain A", str(g1a)),
@@ -727,7 +729,9 @@ def main():
                         ('Freq', str(freqS2.value)),
                         ('Card', str(cardS2.value)),
                         ('Bandwidth', str(bwS2.value)),
-                        ("AM :", str(xpicS2.value))]))
+                        ("AM :", str(xpicS2.value))], line_policy='next')
+                    hover.renderers= [curr_line]
+                    graph2.add_tools(hover)
 
                 def xpicUp2(attr,old,new):
                     equipS2.options = list(cb0Ch(None,xpicS2.value))
@@ -878,8 +882,8 @@ def main():
                                                                     float(freqS3.value), cardS3.value,
                                                                     float(bwS3.value), refS3.value))
                     truc = Line(x='x', y='y', line_color=next(colors3), line_width=2)
-                    graph3.add_glyph(curr_dat, truc)
-                    graph3.add_tools(HoverTool(tooltips=[
+                    curr_line = graph3.add_glyph(curr_dat, truc)
+                    hover = HoverTool(tooltips=[
                         ("Availability", "@y{1.111111}"),
                         ("Distance", "@x"),
                         ("RSL", "@rsl"),
@@ -892,7 +896,9 @@ def main():
                         ('Freq', str(freqS3.value)),
                         ('Card', str(cardS3.value)),
                         ('Bandwidth', str(bwS3.value)),
-                        ("AM :", str(xpicS3.value))]))
+                        ("AM :", str(xpicS3.value))],line_policy='next')
+                    hover.renderers = [curr_line]
+                    graph3.add_tools(hover)
 
                 def xpicUp3(attr, old, new):
         
@@ -1197,7 +1203,7 @@ def main():
             tau = float(link.polar.data) # float(form.polar.data)
             # rr = float(rp.rre.data)
             p0 = 99.99
-            if (link.p_entry.data!= None) : p0 = 100 - float(link.p_entry.data)
+            if (link.p_entry.data!= '') : p0 = 100 - float(link.p_entry.data)
             xpic = ep.cb0.data
             equip = ep.cb1.data
             freq = float(ep.fe.data)
@@ -1298,8 +1304,8 @@ def main():
                                              rrS.value, float(polarS.value), p0, xpicS.value, equipS.value,
                                              float(freqS.value), cardS.value, float(bwS.value), ref_mod,am,dS.value))
                     truc = Line(x='x',y='y', line_color=next(colors), line_width=2)
-                    graph1.add_glyph(curr_dat,truc)
-                    graph1.add_tools(HoverTool(tooltips=[
+                    curr_line = graph1.add_glyph(curr_dat,truc)
+                    hover = HoverTool(tooltips=[
                         ("Capacity", "@y"),
                         ("Availability", "@x"),
                         ("Gain A", str(g1a)),
@@ -1311,7 +1317,9 @@ def main():
                         ('Freq', str(freqS.value)),
                         ('Card', str(cardS.value)),
                         ('Bandwidth', str(bwS.value))
-                        ]))
+                        ])
+                    hover.renderers = [curr_line]
+                    graph1.add_tools(hover)
 
                 def xpicUp(attr, old, new):
                     equipS.options = list(cb0Ch(None, xpicS.value))
@@ -1472,8 +1480,8 @@ def main():
                     curr_dat = plt.ColumnDataSource(data=graph.plotMod(g1a,g1b, el, geoloc,
                                   rrS2.value,float(polarS2.value), p0, xpicS2.value, equipS2.value, float(freqS2.value), cardS2.value, float(bwS2.value), ref_mod, amS2.value))
                     truc = Line(x='x',y='y', line_color=next(colors), line_width=2,subscribed_events = ["tap"])
-                    graph2.add_glyph(curr_dat,truc)
-                    graph2.add_tools(HoverTool(tooltips = [
+                    curr_line = graph2.add_glyph(curr_dat,truc)
+                    hover = HoverTool(tooltips = [
                     ("Capacity", "@y"),
                     ("Distance", "@x"),
                     ("Gain A",str(g1a)),
@@ -1485,7 +1493,9 @@ def main():
                     ('Freq',str(freqS2.value)),
                     ('Card',str(cardS2.value)),
                     ('Bandwidth',str(bwS2.value)),
-                    ("AM :",str(amS2.value))]))
+                    ("AM :",str(amS2.value))])
+                    hover.renderers = [curr_line]
+                    graph2.add_tools(hover)
 
 
 
@@ -1637,8 +1647,8 @@ def main():
                                              rrS3.value, float(polarS3.value), p0, xpicS3.value, equipS3.value,
                                              float(freqS3.value), cardS3.value, float(bwS3.value), refS3.value, amS3.value))
                     truc = Line(x='x', y='y', line_color=next(colors3), line_width=2)
-                    graph3.add_glyph(curr_dat,truc)
-                    graph3.add_tools(HoverTool(tooltips=[
+                    curr_line = graph3.add_glyph(curr_dat,truc)
+                    hover = HoverTool(tooltips=[
                         ("Availability", "@y{1.111111}"),
                         ("Distance", "@x"),
                         ("Gain A", str(g1a)),
@@ -1650,7 +1660,9 @@ def main():
                         ('Freq', str(freqS3.value)),
                         ('Card', str(cardS3.value)),
                         ('Bandwidth', str(bwS3.value)),
-                        ("AM :", str(amS3.value))]))
+                        ("AM :", str(amS3.value))])
+                    hover.renderers = [curr_line]
+                    graph3.add_tools(hover)
 
 
                 def xpicUp3(attr, old, new):

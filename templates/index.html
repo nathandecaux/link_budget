@@ -14,8 +14,7 @@
 <script>
     $( document ).ready(function() {
     $("#lp-ele").attr('required', 'required');
-    $("#lp-p_entry").attr('required', 'required')
-    if (!$("#mf-dist").is(':checked'))
+    if (!$("#mf-rainp").is(':checked'))
     {$("#mf-dist").css('display', 'none');
     $("label[for='mf-dist']").css('display','none');
     }
@@ -146,7 +145,7 @@ function action()
     $bandw = $('#ep-cpe').val();
     Sijax.request('cpe',[$xpic,$equi,$freq,$card,$bandw]);});
 
-  $$("#sp-peak").change(function()
+  $("#sp-peak").change(function()
     {
     $bandw = $('#ep-cpe').val();
     Sijax.request('cpe',[$xpic,$equi,$freq,$card,$bandw]);});
@@ -175,6 +174,7 @@ function action()
         {
             alert("Please choose a reference modulation if you wish to get 'Availability / Distance' graph");
         }
+
     });
 
 
