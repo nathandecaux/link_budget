@@ -857,6 +857,7 @@ def main():
                     graph3.add_tools(HoverTool(tooltips=[
                        ("Availability", "@y{1.111111}"),
                         ("Distance", "@x"),
+                        ("RSL", "@rsl"),
                         ("Gain A", str(g1a)),
                         ("Gain B", str(g1b)),
                         ("Rainrate", str(rrS3.value)),
@@ -881,6 +882,7 @@ def main():
                     graph3.add_tools(HoverTool(tooltips=[
                         ("Availability", "@y{1.111111}"),
                         ("Distance", "@x"),
+                        ("RSL", "@rsl"),
                         ("Gain A", str(g1a)),
                         ("Gain B", str(g1b)),
                         ("Rainrate", str(rrS3.value)),
@@ -1836,6 +1838,7 @@ def main():
                 poubelle_2.POLAR = 0 if link.polar.data=='h' else 90 # float(form.polar.data)
                 if link.rre.data != '':
                     poubelle_2.RR = float(link.rre.data)
+                poubelle_2.DISTANCE = float(form.sp.dist.data)
                 poubelle_2.AVAILABILITY  = float(link.p_entry.data)
                 poubelle_2.CIR = float(form.sp.capa.data)
                 [eb_stab,ex_tab,e_mw_tab,mw_stab,mw_xtab] = poubelle_2.getScenarii(0,float(form.sp.capa.data),float(link.p_entry.data),float(form.sp.margin.data))
