@@ -123,7 +123,7 @@ MODEL column should be like this : {CARD}/{Bandwidth value}/{SUBCARD} (the subca
 
 - For Huawei : (ONLY USE db_huawei.json)
   - If the equipment is RTN900 : The syntax is {FREQUENCY}G{BANDWIDTH}M{MODULATION}QAM_{CARD} =>  Example : 13G7M32QAM_ISM6XMC5D
-  - Else, the syntax is : {CARD}_{FREQUENCY}G_{BANDWIDTH}M_{MODULATION}QAM => Example : RTN380AX_80G_62.5M_128QAM
+  - Else, the syntax is : {CARD}\_{FREQUENCY}G_{BANDWIDTH}M_{MODULATION}QAM => Example : RTN380AX_80G_62.5M_128QAM
 
 
 
