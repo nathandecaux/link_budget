@@ -119,10 +119,10 @@ Adding new equipment is not that easy because Ericsson and Huawei has provided n
 Then, new equipment can be added using wisely the 'database.py' script, following thoses rules :
 - For ericsson :
 
-MODEL column should be like this : <CARD>/<Bandwidth value>/<SUBCARD> (the subcard value is not important)
+MODEL column should be like this : {CARD}/{Bandwidth value}/{SUBCARD} (the subcard value is not important)
 
 - For Huawei : (ONLY USE db_huawei.json)
-  - If the equipment is RTN900 : The syntax is {FREQUENCY}G{BANDWIDTH}M{MODULATION>QAM_<CARD> =>  Example : 13G7M32QAM_ISM6XMC5D
+  - If the equipment is RTN900 : The syntax is {FREQUENCY}G{BANDWIDTH}M{MODULATION}QAM_{CARD} =>  Example : 13G7M32QAM_ISM6XMC5D
   - Else, the syntax is : {CARD}_{FREQUENCY}G_{BANDWIDTH}M_{MODULATION}QAM => Example : RTN380AX_80G_62.5M_128QAM
 
 
