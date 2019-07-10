@@ -423,8 +423,6 @@ def main():
             d1a = float(link.gae.data)
             d1b = float(link.gbe.data)
             el = float(link.ele.data)
-            proxyAddr = {'https':'xndecaux@10.101.13.55:8080','http':'xndecaux@10.101.13.55:8080'}
-
             URL = "https://nominatim.openstreetmap.org/search"
             geoloc = (0, 0)
 
@@ -437,7 +435,7 @@ def main():
                 r = ''
 
                 try:
-                    r = requests.get(url=URL, params=location_detail, proxies=proxyAddr, verify=False, timeout=5)
+                    r = requests.get(url=URL, params=location_detail, verify=False, timeout=5)
                     data = r.json()
                     latitude = float(data[0]['lat'])
                     longitude = float(data[0]['lon'])
@@ -1171,8 +1169,6 @@ def main():
             d1a = float(link.gae.data)
             d1b = float(link.gbe.data)
             el = float(link.ele.data)
-            proxyAddr = {'https':'xndecaux@10.101.13.55:8080','http':'xndecaux@10.101.13.55:8080'}
-
             URL = "https://nominatim.openstreetmap.org/search"
             geoloc = (0, 0)
             if form.mf.dist.data != '':
@@ -1185,7 +1181,7 @@ def main():
                 location_detail = {'q': location, 'format': 'json'}
                 r=''
                 try:
-                    r = requests.get(url=URL, params=location_detail,proxies=proxyAddr,verify=False,timeout=5)
+                    r = requests.get(url=URL, params=location_detail,verify=False,timeout=5)
                     data = r.json()
                     latitude = float(data[0]['lat'])
                     longitude = float(data[0]['lon'])
@@ -1760,16 +1756,15 @@ def main():
         if form.is_submitted():
             if form.validate():
                 link = form.lp
-                proxyAddr = {'https':'xndecaux@10.101.13.55:8080','http':'xndecaux@10.101.13.55:8080'}
                 URL = "https://nominatim.openstreetmap.org/search"
                 location = str(link.xe.data)
                 #key = 'AIzaSyA3nLe6yUCTTMB82u1LTuWoyGJGvr8gBZg'
                 location_detail = {'q': location,'format':'json'}
                 if location != '' and link.rre.data == '':
                     s = requests.Session()
-                    s.proxies= proxyAddr
+                    
                     try:
-                        r = requests.get(url=URL, params=location_detail, proxies=proxyAddr, verify=False, timeout=5)
+                        r = requests.get(url=URL, params=location_detail, verify=False, timeout=5)
                         data = r.json()
                         latitude = float(data[0]['lat'])
                         longitude = float(data[0]['lon'])
@@ -1812,17 +1807,15 @@ def main():
         if form.is_submitted():
             if form.validate():
                 link = form.lp
-                proxyAddr = {'https':'xndecaux@10.101.13.55:8080','http':'xndecaux@10.101.13.55:8080'}
-
                 URL = "https://nominatim.openstreetmap.org/search"
                 location = str(link.xe.data)
                 #key = 'AIzaSyA3nLe6yUCTTMB82u1LTuWoyGJGvr8gBZg'
                 location_detail = {'q': location,'format':'json'}
                 if location != '' and link.rre.data == '':
                     s = requests.Session()
-                    s.proxies = proxyAddr
+                   
                     try:
-                        r = requests.get(url=URL, params=location_detail, proxies=proxyAddr, verify=False, timeout=5)
+                        r = requests.get(url=URL, params=location_detail,verify=False, timeout=5)
                         data = r.json()
                         latitude = float(data[0]['lat'])
                         longitude = float(data[0]['lon'])
@@ -1863,8 +1856,10 @@ def main():
     @flask_sijax.route(app, '/help')
     def help():
         return render_template('help.html',title='Help - Link Budget')
-
-
+    @flask_sijax.route(app, '/logs')
+    def logs():
+        return render_template('logs.html',title='Logs')
+    
     app.run(host='0.0.0.0',port=5000,debug=True,threaded=True)
 
 if __name__== '__main__':
