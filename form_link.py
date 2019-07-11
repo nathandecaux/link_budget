@@ -1858,7 +1858,13 @@ def main():
         return render_template('help.html',title='Help - Link Budget')
     @flask_sijax.route(app, '/logs')
     def logs():
-        return render_template('logs.html',title='Logs')
+        f = open('nohup.out','r+')
+        log = f.readlines()
+        los = ''
+        for line in log:
+            los = los+line+'</br>'
+        #log.replace('\n','<br/>')    
+        return render_template('graphs.html',graph1=los,title='Logs')
     
     app.run(host='0.0.0.0',port=5000,debug=True,threaded=True)
 
