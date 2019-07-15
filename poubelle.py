@@ -108,28 +108,21 @@ def getAntGain(dia,freq):
 def getProfilperCapa(capa=0,xpic=False,eband=False,multiB=False):
     profils = list()
     user = tinydb.Query()
-    db = ''
-    if multiB:
-        if xpic: db = tinydb.TinyDB('db_huawei_XPIC.json')
-        else : db = tinydb.TinyDB('db_huawei.json')
-        if eband: tab_str = 'RTN380AX'
-        else: tab_str = 'RTN900'
-        for row in db.table(tab_str):
+    db = tinydb.TinyDB('db_huawei.json')
+    for tab in db.tables():
+        for row in db.table(str(tab)):
             offset = row['ACM_DROP_OFFSET']
             if offset == '' or not am: offset =0.0
-            profils.append([row['MODEL'], row['BAND_DESIGNATOR'], row['MAX_TX_POWER'], row['CAPACITY'],
-                                    row['TYP_RX_THRESHOLD3'] + offset])
-    else:
-        db = tinydb.TinyDB('db_huawei.json')
-        for tab in db.tables():
-            table = db.table(str(tab))
-            for row in table:
-                offset = row['ACM_DROP_OFFSET']
-                if offset == '' or not am: offset = 0.0
-                if(np.isclose(row['CAPACITY'],float(capa),atol=MARG)):
-                    profils.append([row['MODEL'],row['BAND_DESIGNATOR'],row['MAX_TX_POWER'],row['CAPACITY'],row['TYP_RX_THRESHOLD3']+ offset])
+            if eband and row['BAND_DESIGNATOR'] == 80:
+                profils.append([row['MODEL'], row['BAND_DESIGNATOR'], row['MAX_TX_POWER'], row['CAPACITY'],
+                                        row['TYP_RX_THRESHOLD3'] + offset])
+            if capa>0 and np.isclose(float(row['CAPACITY']),capa,atol=MARG):
+                profils.append([row['MODEL'], row['BAND_DESIGNATOR'], row['MAX_TX_POWER'], row['CAPACITY'],
+                                row['TYP_RX_THRESHOLD3'] + offset])
+            if not eband and row['BAND_DESIGNATOR']!=80 :
+                profils.append([row['MODEL'], row['BAND_DESIGNATOR'], row['MAX_TX_POWER'], row['CAPACITY'],
+                                row['TYP_RX_THRESHOLD3'] + offset])
 
-                    #profils.append()
     return profils
 
 
@@ -218,7 +211,7 @@ def getScenarii(test,CIR,AVAILABILITY,MARG):
     outstr=outstr+'---- MW (1+0) ----\n'
     i=0
     for prof in good_pro:
-        if prof[1]!=80.0:
+        if prof[1]!=80.0 and np.isclose(float(prof[-3]),CIR,atol=MARG):
             i = i+1
             met = str(i)
 
@@ -334,7 +327,7 @@ def getModel(row,row2):
         mod2 = div2[0]
         if mod==mod2:
             if div[-1]!='X':
-                if div[-1]=='BPSK':
+                if div[-1]=='BPSK' and div[0]=='RTN380AX':
                    bw = float(div[2].split('M')[0])
                    bw2 = float(div2[2].split('M')[0])
                    if bw < 700 and bw2/bw in [1.0,2.0,4.0]:
@@ -345,7 +338,7 @@ def getModel(row,row2):
                        return True
                    else:
                        return False
-                elif div[-1]!='BPSK' and div[-2]==div2[-2]:
+                elif (div[-1]!='BPSK' or div[0]!='RTN380AX') and div[-2]==div2[-2]:
                     return True
                 else:
                     return False
@@ -379,7 +372,7 @@ def getModelMulti(row,rowb,row2,row2b):
     mod2 = div2[0]
     eban = False
     if mod==mod2:
-        if div[-1] == 'BPSK':
+        if div[-1] == 'BPSK' and div[0]=='RTN380AX':
             bw = float(div[2].split('M')[0])
             bw2 = float(div2[2].split('M')[0])
             if bw < 700 and bw2 / bw in [1.0, 2.0, 4.0]:
@@ -390,7 +383,7 @@ def getModelMulti(row,rowb,row2,row2b):
                 eban= True
             else:
                 eban= False
-        elif div[-1] != 'BPSK' and div[-2] == div2[-2]:
+        elif (div[-1] != 'BPSK'  or div[0]!='RTN380AX') and div[-2] == div2[-2]:
             eban= True
         else:
             eban= False

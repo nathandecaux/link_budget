@@ -1,5 +1,5 @@
 import socket
-
+import shutil
 from flask import Flask, render_template, flash, redirect, request, g, url_for
 from flask_bootstrap import Bootstrap
 from bokeh.server.server import Server,BaseServer
@@ -39,6 +39,7 @@ from jinja2 import Environment,Template
 from threading import Thread
 import poubelle_2
 import poubelle
+import import_data
 from make_graph import MakeGraph
 from make_graph_eric import MakeGraphE
 import requests
@@ -219,6 +220,7 @@ class GlobalFormEric(Form):
 def main():
     path = os.path.join('.', os.path.dirname(__file__), 'static/js/sijax/')
     app.config['SIJAX_STATIC_PATH'] = path
+    app.config['UPLOAD_FOLDER'] = 'static/files/'
     app.config['SIJAX_JSON_URI'] = '/static/js/sijax/json2.js'
     flask_sijax.Sijax(app)
     app.config['BOOTSTRAP_SERVE_LOCAL']= True
@@ -306,7 +308,7 @@ def main():
             choix = list()
             for row in table:
                 freq0 = row['BAND_DESIGNATOR']
-                if str(row['MODEL']).split('/').__len__() > 3 and str(equi)=='MINI-LINK_6600':
+                if str(row['MODEL']).split('/').__len__() > 3 :
                     mod_card = str(row['MODEL']).split('/')[1]
                 else:
                     mod_card = str(int(float(freq))) + 'ASA'
@@ -1865,8 +1867,114 @@ def main():
             los = los+line+'</br>'
         #log.replace('\n','<br/>')    
         return render_template('graphs.html',graph1=los,title='Logs')
-    
+
+
+    @app.route('/upload', methods=['GET', 'POST'])
+    def upload_file():
+        if request.method == 'POST':
+            # check if the post request has the file part
+            if 'file' not in request.files:
+                flash('No file part')
+                return redirect(request.url)
+            file = request.files['file']
+            # if user does not select file, browser also
+            # submit an empty part without filename
+            if file.filename == '':
+                flash('No selected file')
+                return redirect(request.url)
+
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], file.filename))
+            db = request.form.get('db')
+            name = request.form.get('name')
+
+            if db != '' and name != '':
+                check, dico = import_data.check(os.path.join(app.config['UPLOAD_FOLDER'], file.filename),
+                                                request.form.get('db'))
+                if check:
+                    import_data.add(db,dico,name)
+                    flash("The file has been successufully imported")
+                else:
+                    flash("The file doesn't meet the requirements")
+                    return redirect(request.url)
+            else:
+                flash("Please select a database and set a name for the equipment")
+                return redirect(request.url)
+
+        return render_template("graphs.html",graph1='''
+        <div class= "container">
+            <h1>Upload new File</h1>
+            </br></br>
+            <div class="form-group">
+            <form class="form" role="form" method=post enctype=multipart/form-data>
+              <input type=file name=file>
+              </br>
+              Equipment Name : <input class="form-control" type=text name="name">
+              </br></br>
+              Manufacturer database <select class="form-control" name="db">
+                <option value="">--Select a database file--</option>
+                <option value="db_huawei.json">Huawei</option>
+                <option value="db_ericsson.json">Ericsson</option>
+                <option value="db_ericsson_AM.json">Ericsson AM</option>
+              </select>
+              </br></br>
+              <input class="btn btn-primary" type=submit value=Upload>
+              </br></br>
+            </form>
+            </br>
+            </br>
+            <h5><a href="/manage">Manage database</a></h5>
+        </div>
+        ''')
+
+    @app.route('/manage', methods=['GET', 'POST'])
+    def restore():
+
+        if request.method == 'POST':
+            action = request.form.get('db')
+            if action=='save':
+                shutil.copy('db_huawei.json','static/db/')
+                shutil.copy('db_ericsson.json','static/db/')
+                shutil.copy('db_ericsson_AM.json','static/db/')
+                flash("Database saved successfully")
+            if action=='restore':
+                shutil.copy('static/db/db_huawei.json','.')
+                shutil.copy('static/db/db_ericsson.json','.')
+                shutil.copy('static/db/db_ericsson_AM.json','.')
+                flash("Database restored successfully")
+
+            if action=="reinitialise":
+                shutil.copy('static/db/init/db_huawei.json', '.')
+                shutil.copy('static/db/init/db_ericsson.json', '.')
+                shutil.copy('static/db/init/db_ericsson_AM.json', '.')
+                flash("Database reinitialised successfully")
+
+        return render_template("graphs.html", graph1='''
+                <div class= "container">
+                <h1>Manage database</h1>
+                <p>If you just had uploaded a new equipment data file, please check if everything is working well with this new equipment. Then, using this page, you'll be able to save the current database as a stable one, or in contrary restore the database to the latest stable version.
+                </br>If you encontered any problem, you can still use the "reinitialise" action to reload the very first database
+                </p>
+                
+                <div class ="form-group">
+                <form class="form form-horizontal" method=post enctype=multipart/form-data>
+                  <select class="form-control" name="db">
+                    <option value="">--Select an action--</option>
+                    <option value="save">Save</option>
+                    <option value="restore">Restore</option>
+                    <option value="reinitialise">Reinitialise</option>
+                    </select>         
+                              </br></br>
+
+                  <input class="btn btn-primary" type=submit value=Submit>
+                            </br></br>
+
+                </form>
+                </div>
+                </div>
+                ''')
+
     app.run(host='0.0.0.0',port=5000,debug=True,threaded=True)
+
 
 if __name__== '__main__':
     main()

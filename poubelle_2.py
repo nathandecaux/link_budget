@@ -326,14 +326,18 @@ def getScenariiPIR(goodCIR):
 
 
 def getModel(row, row2):
-    div = row.split('/B')
-    mod = div[0]
-    div2 = row2.split('/B')
-    mod2 = div2[0]
-    if mod == mod2:
-        return True
-    else:
-        return False
+    a = row.split('/')
+    b = row2.split('/')
+    if len(a) == len(b):
+        div = row.split('/B')
+        mod = div[0]
+        div2 = row2.split('/B')
+        mod2 = div2[0]
+        if mod == mod2:
+            return True
+        else:
+            return False
+    else: return False
         
   
 
