@@ -43,12 +43,13 @@ def check(path,db):
             if not (equip['MODEL'].split('_').__len__()==4 and equip['ACM_DROP_OFFSET'] != None): flag = False
 
         elif db_code[db]== 1 :
-            if not equip['MODEL'].split('/').__len__() > 2 and equip['MODEL'].split('/B').__len__()==1 : flag = False
+            if not (equip['MODEL'].split('/').__len__() > 2) : flag = False
 
-        elif db_code[db]== 2:
-            if not equip['MODEL'].split('/').__len__()>2 and equip['MOD_DOWNSHIFT_OFFSET'] != None and equip['MODEL'].split('/B').__len__()==2:
+        elif db_code[db]== 2 :
+            if not (equip['MODEL'].split('/').__len__()>2 and str(equip['MOD_DOWNSHIFT_OFFSET']) != "" and equip['MODEL'].split('/B').__len__()==2):
                 flag = False
         else: flag = False
+        
     return [flag,equipment]
 
 def add(file,dico,name):

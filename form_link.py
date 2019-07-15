@@ -1888,6 +1888,7 @@ def main():
             name = request.form.get('name')
 
             if db != '' and name != '':
+                name = name.replace(" ","_")
                 check, dico = import_data.check(os.path.join(app.config['UPLOAD_FOLDER'], file.filename),
                                                 request.form.get('db'))
                 if check:
@@ -1899,7 +1900,7 @@ def main():
             else:
                 flash("Please select a database and set a name for the equipment")
                 return redirect(request.url)
-
+            os.system('rm -rf static/files/')
         return render_template("graphs.html",graph1='''
         <div class= "container">
             <h1>Upload new File</h1>
