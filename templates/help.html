@@ -231,6 +231,275 @@ If a PIR has been set up, each row from each table can be clicked to show an add
 <blockquote>
   <p><em>To get to the PIR configuration, the algorithm will increase the modulation and until the PIR is reached, if possible. In the RTN 380AX product, the bandwidth could also been increased following some specific upshift rules</em></p>
 </blockquote>
+<div class="container">
+<h2>Database&nbsp;:</h2>
+
+<p class=MsoNormal>This <span class=SpellE>is</span> a <span class=SpellE>really</span>
+<span class=SpellE>touchy</span> point. In the application, Ericsson and Huawei
+are <span class=SpellE>separated</span> <span class=SpellE>because</span> <span
+class=SpellE>they</span> <span class=SpellE>provided</span> data files for IQ
+Link <span class=SpellE>that</span> <span class=SpellE>gives</span> <span
+class=SpellE>basically</span> the <span class=SpellE>same</span> <span
+class=SpellE>kind</span> of information, but in a <span class=SpellE>different</span>
+<span class=SpellE>syntax</span>. </p>
+
+<p class=MsoNormal><span class=SpellE>There&#8217;s</span> 4 <span
+class=SpellE>database</span> files in <span class=SpellE>this</span>
+application&nbsp;:</p>
+
+<p class=MsoListParagraph style='text-indent:-18.0pt;mso-list:l5 level1 lfo7'><![if !supportLists]><span
+style='mso-bidi-font-family:Calibri'><span style='mso-list:Ignore'>1.<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span></span><![endif]><span
+class=SpellE><span class=GramE>db</span>_huawei.json</span> =&gt; For Huawei <span
+class=SpellE>equipment</span></p>
+
+<p class=MsoListParagraph style='text-indent:-18.0pt;mso-list:l5 level1 lfo7'><![if !supportLists]><span
+style='mso-bidi-font-family:Calibri'><span style='mso-list:Ignore'>2.<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span></span><![endif]><span
+class=SpellE><span class=GramE>db</span>_huawei_XPIC.json</span> =&gt; For
+Huawei <span class=SpellE>equipment</span> <span class=SpellE>with</span>
+X-Polar Discrimination info</p>
+
+<p class=MsoListParagraph style='text-indent:-18.0pt;mso-list:l5 level1 lfo7'><![if !supportLists]><span
+style='mso-bidi-font-family:Calibri'><span style='mso-list:Ignore'>3.<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span></span><![endif]><span
+class=SpellE><span class=GramE>db</span>_ericsson.json</span> =&gt; For
+Ericsson <span class=SpellE>equipment</span></p>
+
+<p class=MsoListParagraph style='text-indent:-18.0pt;mso-list:l5 level1 lfo7'><![if !supportLists]><span
+style='mso-bidi-font-family:Calibri'><span style='mso-list:Ignore'>4.<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span></span><![endif]><span
+class=SpellE><span class=GramE>db</span>_ericsson_AM.json</span> =&gt; For
+Ericsson <span class=SpellE>equipment</span>, <span class=SpellE>with</span>
+Adaptative Modulation offset</p>
+
+<p class=MsoNormal><span class=SpellE>Each</span> <span class=SpellE>database</span>
+<span class=SpellE>contains</span> <span class=SpellE>several</span> tables, <span
+class=SpellE>that</span> <span class=SpellE>we</span> can assume as <span
+class=SpellE>several</span> <span class=SpellE>equipment</span>.</p>
+
+<p class=MsoNormal>For <span class=SpellE>example</span>, in <span
+class=SpellE>db_huawei_XPIC.json</span>, <span class=SpellE>there&#8217;s</span>
+2 tables&nbsp;: </p>
+
+<p class=MsoListParagraph style='text-indent:-18.0pt;mso-list:l2 level1 lfo8'><![if !supportLists]><span
+style='font-family:Symbol;mso-fareast-font-family:Symbol;mso-bidi-font-family:
+Symbol'><span style='mso-list:Ignore'>&middot;<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span></span><![endif]>&laquo;&nbsp;RTN900&nbsp;&raquo;</p>
+
+<p class=MsoListParagraph style='text-indent:-18.0pt;mso-list:l2 level1 lfo8'><![if !supportLists]><span
+style='font-family:Symbol;mso-fareast-font-family:Symbol;mso-bidi-font-family:
+Symbol'><span style='mso-list:Ignore'>&middot;<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span></span><![endif]>&laquo;&nbsp;RTN380AX&nbsp;&raquo;</p>
+
+<p class=MsoNormal><span class=SpellE>According</span> to the table <span
+class=SpellE>name</span>, the <span class=SpellE>algorithm</span> <span
+class=SpellE>will</span> <span class=SpellE>act</span> in a <span class=SpellE>specific</span>
+<span class=SpellE>way</span></p>
+
+<p class=MsoNormal><span class=SpellE>Then</span>, <span class=SpellE>importing</span>
+new data <span class=SpellE>is</span> <span class=SpellE>quite</span> hard, at
+least <span class=SpellE>without</span> <span class=SpellE>modifying</span> the
+application <span class=SpellE>itself</span>.</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal>To <span class=SpellE>make</span> <span class=SpellE>it</span>
+<span class=SpellE>work</span> <span class=SpellE>directly</span>, <span
+class=SpellE>excel</span> files <span class=SpellE>that</span> are <span
+class=SpellE>imported</span> <span class=SpellE>should</span> follow <span
+class=SpellE>some</span> strict <span class=SpellE>rules</span>&nbsp;:</p>
+
+<p class=MsoListParagraph style='margin-left:18.0pt;text-indent:-18.0pt;
+mso-list:l8 level1 lfo9'><![if !supportLists]><span style='mso-bidi-font-family:
+Calibri'><span style='mso-list:Ignore'>1)<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span></span><![endif]>For Ericsson :</p>
+
+<p class=MsoListParagraph style='margin-left:0cm'>MODEL <span class=SpellE>column</span>
+must <span class=SpellE>be</span> like <span class=SpellE>this</span> : </p>
+
+<p class=MsoListParagraph align=center style='margin-left:0cm;text-align:center'><b><span
+style='font-family:"Courier New";color:red'>{CARD_<span class=GramE>NAME}<span
+style='color:windowtext'>/</span></span>{BANDWIDTH}</span></b><b><span
+style='font-family:"Courier New"'>/<span style='color:red'>{SUBCARD}</span></span></b></p>
+
+<p class=MsoListParagraph style='margin-left:0cm'>BANDWIDTH must <span
+class=SpellE>be</span> a simple <span class=SpellE>integer</span> value. </p>
+
+<p class=MsoListParagraph style='margin-left:0cm'>The <span class=SpellE>subcard</span>
+value <span class=SpellE>is</span> not important if <span class=SpellE>you</span>
+are <span class=SpellE>importing</span> <span class=SpellE>it</span> to
+Ericsson <span class=SpellE>static</span> modulation <span class=SpellE>database</span>.</p>
+
+<p class=MsoListParagraph style='margin-left:0cm'>If <span class=SpellE>you&#8217;re</span>
+<span class=SpellE>using</span> <b>Ericsson AM <span class=SpellE>database</span></b>,
+the <span class=SpellE>subcard</span> value <span class=SpellE>should</span> <span
+class=SpellE>be</span> like <span class=SpellE>this</span>&nbsp;:</p>
+
+<p class=MsoListParagraph style='margin-left:141.6pt;text-indent:35.4pt'><b><span
+style='font-family:"Courier New"'>B<span style='color:red'>{SUBCARD}<o:p></o:p></span></span></b></p>
+
+<p class=MsoNormal><b><span style='font-family:"Courier New"'><o:p>&nbsp;</o:p></span></b></p>
+
+<p class=MsoListParagraph style='margin-left:18.0pt;text-indent:-18.0pt;
+mso-list:l8 level1 lfo9'><![if !supportLists]><span style='mso-bidi-font-family:
+Calibri'><span style='mso-list:Ignore'>2)<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span></span><![endif]>For Huawei <b>: (ONLY USE <span class=SpellE>db_<span
+class=GramE>huawei.json</span></span>)</b></p>
+
+<p class=MsoListParagraph style='text-indent:-18.0pt;mso-list:l1 level1 lfo10'><![if !supportLists]><span
+style='font-family:Symbol;mso-fareast-font-family:Symbol;mso-bidi-font-family:
+Symbol'><span style='mso-list:Ignore'>&times;<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span></span><![endif]>If the <span class=SpellE>equipment</span> <span
+class=SpellE>is</span> <b>RTN900</b>, <span class=SpellE>syntax</span> <span
+class=SpellE>is</span>&nbsp;: </p>
+
+<p class=MsoListParagraph align=center style='text-align:center'><b><span
+style='font-family:"Courier New";color:red'>{FREQUENCY}</span></b><b><span
+style='font-family:"Courier New"'>G<span style='color:red'>{BANDWIDTH}</span>M<span
+style='color:red'>{MODULATION}</span>QAM_<span style='color:red'>{CARD}</span></span></b></p>
+
+<p class=MsoNormal style='margin-left:18.0pt'>=&gt; Example :
+13G7M32QAM_ISM6XMC5D</p>
+
+<p class=MsoListParagraph style='text-indent:-18.0pt;mso-list:l1 level1 lfo10'><![if !supportLists]><span
+style='font-family:Symbol;mso-fareast-font-family:Symbol;mso-bidi-font-family:
+Symbol'><span style='mso-list:Ignore'>&times;<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span></span><![endif]><span class=SpellE>Else</span> <b>(by default)</b>,
+the <span class=SpellE>syntax</span> <span class=SpellE>is</span> : </p>
+
+<p class=MsoNormal align=center style='margin-left:18.0pt;text-align:center'><b><span
+style='color:red'>{CARD}</span><span style='color:black'>_</span><span
+style='color:red'>{FREQUENCY}</span><span style='color:black'>G_</span><span
+style='color:red'>{BANDWIDTH}</span><span style='color:black'>M_</span><span
+style='color:red'>{MODULATION}</span><span style='color:black'>QAM</span></b></p>
+
+<p class=MsoNormal style='margin-left:18.0pt'>=&gt; Example :
+RTN380AX_80G_62.5M_128QAM</p>
+
+<p class=MsoNormal>But, if the new RTN980 data file has a <span class=SpellE>syntax</span>
+close to <span class=GramE>the<span style='mso-spacerun:yes'>&nbsp;
+</span>default</span> <span class=SpellE>syntax</span>, <span class=SpellE>you</span>
+<span class=SpellE>should</span> <span class=SpellE>better</span> <span
+class=SpellE>add</span> a new <span class=SpellE>equipment</span> in the <span
+class=SpellE>database</span> (=&nbsp;&#8216;RTN980&#8217; for <span
+class=SpellE>example</span>) <span class=SpellE>instead</span> of <span
+class=SpellE>importing</span> <span class=SpellE>those</span> data in the
+RTN900 table.<span style='mso-spacerun:yes'>&nbsp; </span></p>
+
+<p class=MsoNormal>In <span class=SpellE>any</span> case, the <span
+class=SpellE>easiest</span> <span class=SpellE>way</span> to import new Huawei <span
+class=SpellE>equipment</span> <span class=SpellE>is</span> to <span
+class=SpellE>create</span> a new table and import a data table <span
+class=SpellE>that</span> fit to the default <span class=SpellE>syntax</span>.</p>
+
+<h3>Import and manage data</h3>
+
+<p class=MsoNormal>To help <span class=SpellE>you</span> in data imports, a
+section has been <span class=SpellE>added</span> in the web application. </p>
+
+<p class=MsoNormal><span class=SpellE>There&#8217;s</span> <span class=SpellE>two</span>
+pages&nbsp;: </p>
+
+<p class=MsoListParagraph style='text-indent:-18.0pt;mso-list:l6 level1 lfo11'><![if !supportLists]><span
+style='font-family:Symbol;mso-fareast-font-family:Symbol;mso-bidi-font-family:
+Symbol'><span style='mso-list:Ignore'>&middot;<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span></span><![endif]>Import (<a
+href="https://imtatlantiquefr-my.sharepoint.com/personal/nathan_decaux_imt-atlantique_net/Documents/10.95.142.210&nbsp;:5000/upload">10.95.142.210&nbsp;:5000/<span
+class=SpellE>upload</span></a>)&nbsp;</p>
+
+<p class=MsoNormal>This page permit <span class=SpellE>uploading</span> an <span
+class=SpellE>excel</span> file and import <span class=SpellE>it</span> in a <span
+class=SpellE>specific</span> <span class=SpellE>database</span>. </p>
+
+<p class=MsoNormal>You can <span class=SpellE>choose</span> a new <span
+class=SpellE>name</span> to <span class=SpellE>create</span> a new <span
+class=SpellE>equipment</span> or use an <span class=SpellE>existing</span> one
+to insert <span class=SpellE>those</span> new values. I <span class=SpellE>recommand</span>
+to <span class=SpellE>create</span> a new <span class=SpellE>equipment</span>
+to <span class=SpellE>keep</span> <span class=SpellE>it</span> <span
+class=SpellE>clear</span>.</p>
+
+<p class=MsoNormal><span class=SpellE>Then</span> <span class=SpellE>you</span>
+can <span class=SpellE>choose</span> <span class=SpellE>between</span> <span
+class=SpellE>those</span> 3 <span class=SpellE>databases</span>&nbsp;:</p>
+
+<p class=MsoListParagraph style='text-indent:-18.0pt;mso-list:l9 level1 lfo12'><![if !supportLists]><span
+style='mso-bidi-font-family:Calibri'><span style='mso-list:Ignore'>1.<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span></span><![endif]>&laquo;&nbsp;Huawei&nbsp;<span
+class=GramE>&raquo;&nbsp;,</span> <span class=SpellE>which</span> <span
+class=SpellE>is</span> the <span class=SpellE>huawei</span> <span class=SpellE>database</span>
+<span class=SpellE>without</span> XPIC information</p>
+
+<p class=MsoListParagraph style='text-indent:-18.0pt;mso-list:l9 level1 lfo12'><![if !supportLists]><span
+style='mso-bidi-font-family:Calibri'><span style='mso-list:Ignore'>2.<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span></span><![endif]><span
+style='mso-spacerun:yes'>&nbsp;</span>&laquo;&nbsp;Ericsson&nbsp;&raquo;, <span
+class=SpellE>which</span> <span class=SpellE>is</span> the Ericsson <span
+class=SpellE>database</span> <span class=SpellE>without</span> Adaptive Modulation</p>
+
+<p class=MsoListParagraph style='text-indent:-18.0pt;mso-list:l9 level1 lfo12'><![if !supportLists]><span
+style='mso-bidi-font-family:Calibri'><span style='mso-list:Ignore'>3.<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span></span><![endif]>&laquo;&nbsp;Ericsson
+AM&nbsp;&raquo;, <span class=SpellE>which</span> <span class=SpellE>is</span>
+the Ericsson <span class=SpellE><span class=GramE>database</span></span><span
+class=GramE> <span style='mso-spacerun:yes'>&nbsp;</span><span class=SpellE>with</span></span>
+Adaptative Modulation</p>
+
+<p class=MsoNormal><span class=SpellE>Then</span>, <span class=SpellE>you</span>
+can <span class=SpellE>submit</span> the file. The <span class=SpellE>algorithm</span>
+<span class=SpellE>is</span> <span class=SpellE>supposed</span> to <span
+class=SpellE>detected</span> <span class=SpellE>really</span> <span
+class=SpellE>quickly</span> <span class=SpellE>any</span> <span class=SpellE>kind</span>
+of <span class=SpellE>problem</span> (<span class=SpellE>syntax</span> <span
+class=SpellE>verification</span>, <span class=SpellE>empty</span> <span
+class=SpellE>name</span>, etc..), <span class=SpellE>so</span> <span
+class=SpellE>you&#8217;ll</span> <span class=SpellE>be</span> <span
+class=SpellE>quickly</span> <span class=SpellE>noticed</span> of <span
+class=SpellE>any</span> <span class=SpellE>error</span>. <span class=SpellE>Then</span>,
+if <span class=SpellE>everything</span> <span class=SpellE>is</span> ok, the
+import can <span class=SpellE>take</span> a long time (about <span
+class=SpellE>several</span> minutes), but <span class=SpellE>don&#8217;t</span>
+<span class=SpellE>worry</span> about <span class=SpellE>this</span>. </p>
+
+<p class=MsoListParagraph style='text-indent:-18.0pt;mso-list:l6 level1 lfo11'><![if !supportLists]><span
+style='font-family:Symbol;mso-fareast-font-family:Symbol;mso-bidi-font-family:
+Symbol'><span style='mso-list:Ignore'>&middot;<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span></span><![endif]>Manage (<a
+href="https://imtatlantiquefr-my.sharepoint.com/personal/nathan_decaux_imt-atlantique_net/Documents/10.95.142.210&nbsp;:5000/manage">10.95.142.210&nbsp;:5000/manage</a>)&nbsp;</p>
+
+<p class=MsoNormal>The manage section <span class=SpellE>is</span> <span
+class=SpellE>used</span> to do <span class=SpellE>some</span> actions for <span
+class=SpellE>database</span> <span class=SpellE>stuff</span>. </p>
+
+<p class=MsoListParagraph style='margin-left:72.0pt;text-indent:-18.0pt;
+mso-list:l6 level2 lfo11'><![if !supportLists]><span style='font-family:"Courier New";
+mso-fareast-font-family:"Courier New"'><span style='mso-list:Ignore'>o<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp; </span></span></span><![endif]>Save&nbsp;:
+This <span class=SpellE>will</span> <span class=SpellE>save</span> the <span
+class=SpellE>current</span> <span class=SpellE>database</span></p>
+
+<p class=MsoListParagraph style='margin-left:72.0pt;text-indent:-18.0pt;
+mso-list:l6 level2 lfo11'><![if !supportLists]><span style='font-family:"Courier New";
+mso-fareast-font-family:"Courier New"'><span style='mso-list:Ignore'>o<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp; </span></span></span><![endif]>Restore&nbsp;:
+This <span class=SpellE>will</span> <span class=SpellE>reload</span> the last <span
+class=SpellE>saved</span> <span class=SpellE>database</span></p>
+
+<p class=MsoListParagraph style='margin-left:72.0pt;text-indent:-18.0pt;
+mso-list:l6 level2 lfo11'><![if !supportLists]><span style='font-family:"Courier New";
+mso-fareast-font-family:"Courier New"'><span style='mso-list:Ignore'>o<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp; </span></span></span><![endif]><span
+class=SpellE>Reinitialise</span>&nbsp;: This <span class=SpellE>will</span> <span
+class=SpellE>load</span> the <span class=SpellE>very</span> first clean <span
+class=SpellE>database</span> <span style='mso-spacerun:yes'>&nbsp;</span></p>
+
+<p class=MsoListParagraph style='margin-left:0cm'><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal style='page-break-before:always;mso-hyphenate:auto'><o:p>&nbsp;</o:p></p>
+</div>
+
+
 </div>
 </body>
 {% endblock %}
