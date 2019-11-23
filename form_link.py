@@ -37,8 +37,8 @@ from bokeh.client import pull_session
 from bokeh.embed import server_session
 from jinja2 import Environment,Template
 from threading import Thread
-import poubelle_2
-import poubelle
+import scenario_2
+import scenario
 import import_data
 from make_graph import MakeGraph
 from make_graph_eric import MakeGraphE
@@ -460,8 +460,8 @@ def main():
             card = ep.carde.data
             bw = ep.cpe.data
             ref_mod = ep.ref_mod.data
-            g1a = poubelle.getAntGain(d1a, freq)
-            g1b = poubelle.getAntGain(d1b, freq)
+            g1a = scenario.getAntGain(d1a, freq)
+            g1b = scenario.getAntGain(d1b, freq)
             if form.mf.dist.data != '':
                 dist = float(form.mf.dist.data)
             # items = SingleItem(d1a, d1b, el, rr, tau, p0, xpic, equip, freq, card, bw, ref_mod)
@@ -527,8 +527,8 @@ def main():
                 graph1.add_tools(HoverTool(tooltips=TOOLTIPS))
 
                 def update_data(event):
-                    g1a = float(poubelle.getAntGain(float(g1aS.value.__str__()), freq))
-                    g1b = float(poubelle.getAntGain(float(g1bS.value.__str__()), freq))
+                    g1a = float(scenario.getAntGain(float(g1aS.value.__str__()), freq))
+                    g1b = float(scenario.getAntGain(float(g1bS.value.__str__()), freq))
                     graph1.renderers = []
                     TOOLTIPS = [
                         ("Capacity", "@y"),
@@ -552,8 +552,8 @@ def main():
                     graph1.add_tools(HoverTool(tooltips=TOOLTIPS))
 
                 def add_data(event):
-                    g1a = float(poubelle.getAntGain(float(g1aS.value.__str__()), freq))
-                    g1b = float(poubelle.getAntGain(float(g1bS.value.__str__()), freq))
+                    g1a = float(scenario.getAntGain(float(g1aS.value.__str__()), freq))
+                    g1b = float(scenario.getAntGain(float(g1bS.value.__str__()), freq))
                     curr_dat = plt.ColumnDataSource(data=graph.plotRain(g1a, g1b, el, geoloc,
                                                                         rrS.value, float(polarS.value), p0, xpicS.value,
                                                                         equipS.value,
@@ -681,8 +681,8 @@ def main():
 
                 def update_data2(event):
                     p0 = np.round(100.0 - float(pS2.value), 5)
-                    g1a = float(poubelle.getAntGain(float(g1as2.value.__str__()), freq))
-                    g1b = float(poubelle.getAntGain(float(g1bS2.value.__str__()), freq))
+                    g1a = float(scenario.getAntGain(float(g1as2.value.__str__()), freq))
+                    g1b = float(scenario.getAntGain(float(g1bS2.value.__str__()), freq))
                     graph2.hover.clear()
                     graph2.renderers = []
                     TOOLTIPS = [
@@ -708,8 +708,8 @@ def main():
 
                 def add_data2(event):
                     p0 = 100.0 - float(pS2.value)
-                    g1a = float(poubelle.getAntGain(float(g1as2.value.__str__()), freq))
-                    g1b =float(poubelle.getAntGain(float(g1bS2.value.__str__()), freq))
+                    g1a = float(scenario.getAntGain(float(g1as2.value.__str__()), freq))
+                    g1b =float(scenario.getAntGain(float(g1bS2.value.__str__()), freq))
                     curr_dat = plt.ColumnDataSource(data=graph.plotMod(g1a, g1b, el, geoloc,
                                                                        rrS2.value, float(polarS2.value), p0,
                                                                        xpicS2.value, equipS2.value, float(freqS2.value),
@@ -846,8 +846,8 @@ def main():
                 # graph3.plot_height = 800
                 def update_data3(event):
                     graph3.renderers = []
-                    g1a = float(poubelle.getAntGain(float(g1aS3.value.__str__()), freq))
-                    g1b = float(poubelle.getAntGain(float(g1bS3.value.__str__()), freq))
+                    g1a = float(scenario.getAntGain(float(g1aS3.value.__str__()), freq))
+                    g1b = float(scenario.getAntGain(float(g1bS3.value.__str__()), freq))
                     # truc = [g1a,g1b,p0,rrS2.value,float(polarS.value),xpicS.value, equipS.value, float(freqS.value), cardS.value, float(bwS.value), ref_mod, amS.value]
                     # print(truc)
                     # plotAvail(self,g1a,g1b,el,geoloc,rr,tau,p0,xpic,equip,freq,card,bw,ref_mod,am)
@@ -874,8 +874,8 @@ def main():
                         ("AM :", str(xpicS3.value))]))
 
                 def add_data3(event):
-                    g1a = float(poubelle.getAntGain(float(g1aS3.value.__str__()), freq))
-                    g1b = float(poubelle.getAntGain(float(g1bS3.value.__str__()), freq))
+                    g1a = float(scenario.getAntGain(float(g1aS3.value.__str__()), freq))
+                    g1b = float(scenario.getAntGain(float(g1bS3.value.__str__()), freq))
                     curr_dat = plt.ColumnDataSource(graph.plotAvail(g1a, g1b, el, geoloc,
                                                                     rrS3.value, float(polarS3.value), p0, xpicS3.value,
                                                                     equipS3.value,
@@ -1209,8 +1209,8 @@ def main():
             card = ep.carde.data
             bw = ep.cpe.data
             ref_mod = ep.ref_mod.data
-            g1a = poubelle.getAntGain(d1a, freq)
-            g1b = poubelle.getAntGain(d1b, freq)
+            g1a = scenario.getAntGain(d1a, freq)
+            g1b = scenario.getAntGain(d1b, freq)
             am = ep.am.data
             # items = SingleItem(d1a, d1b, el, rr, tau, p0, xpic, equip, freq, card, bw, ref_mod, am)
             # table = SingleTable([items], classes=['table table-striped'])
@@ -1273,8 +1273,8 @@ def main():
                 graph1.add_tools(HoverTool(tooltips=TOOLTIPS))
 
                 def update_data(event):
-                    g1a = float(poubelle.getAntGain(float(g1aS.value.__str__()), freq))
-                    g1b = float(poubelle.getAntGain(float(g1bS.value.__str__()), freq))
+                    g1a = float(scenario.getAntGain(float(g1aS.value.__str__()), freq))
+                    g1b = float(scenario.getAntGain(float(g1bS.value.__str__()), freq))
                     graph1.renderers=[]
                     TOOLTIPS = [
                         ("Capacity", "@y"),
@@ -1297,8 +1297,8 @@ def main():
                     graph1.add_tools(HoverTool(tooltips=TOOLTIPS))
 
                 def add_data(event):
-                    g1a = float(poubelle.getAntGain(float(g1aS.value.__str__()), freq))
-                    g1b = float(poubelle.getAntGain(float(g1bS.value.__str__()), freq))
+                    g1a = float(scenario.getAntGain(float(g1aS.value.__str__()), freq))
+                    g1b = float(scenario.getAntGain(float(g1bS.value.__str__()), freq))
                     curr_dat = plt.ColumnDataSource(data=graph.plotRain(g1a, g1b, el, geoloc,
                                              rrS.value, float(polarS.value), p0, xpicS.value, equipS.value,
                                              float(freqS.value), cardS.value, float(bwS.value), ref_mod,am,dS.value))
@@ -1428,8 +1428,8 @@ def main():
                 graph2.add_tools(HoverTool(tooltips=TOOLTIPS))
                 def update_data2(event):
                     p0 = np.round(100.0 - float(pS.value),5)
-                    g1a = float(poubelle.getAntGain(float(g1as2.value.__str__()), freq))
-                    g1b = float(poubelle.getAntGain(float(g1bS2.value.__str__()), freq))
+                    g1a = float(scenario.getAntGain(float(g1as2.value.__str__()), freq))
+                    g1b = float(scenario.getAntGain(float(g1bS2.value.__str__()), freq))
                     graph2.hover.clear()
                     graph2.renderers = []
                     TOOLTIPS = [
@@ -1474,8 +1474,8 @@ def main():
 
                 def add_data2(event):
                     p0 = 100.0 - float(pS.value)
-                    g1a = float(poubelle.getAntGain(float(g1as2.value.__str__()), freq))
-                    g1b =float(poubelle.getAntGain(float(g1bS2.value.__str__()), freq))
+                    g1a = float(scenario.getAntGain(float(g1as2.value.__str__()), freq))
+                    g1b =float(scenario.getAntGain(float(g1bS2.value.__str__()), freq))
                     curr_dat = plt.ColumnDataSource(data=graph.plotMod(g1a,g1b, el, geoloc,
                                   rrS2.value,float(polarS2.value), p0, xpicS2.value, equipS2.value, float(freqS2.value), cardS2.value, float(bwS2.value), ref_mod, amS2.value))
                     truc = Line(x='x',y='y', line_color=next(colors), line_width=2,subscribed_events = ["tap"])
@@ -1614,8 +1614,8 @@ def main():
                 # graph3.plot_height = 800
                 def update_data3(event):
                     graph3.renderers = []
-                    g1a = float(poubelle.getAntGain(float(g1aS3.value.__str__()), freq))
-                    g1b = float(poubelle.getAntGain(float(g1bS3.value.__str__()), freq))
+                    g1a = float(scenario.getAntGain(float(g1aS3.value.__str__()), freq))
+                    g1b = float(scenario.getAntGain(float(g1bS3.value.__str__()), freq))
                     # truc = [g1a,g1b,p0,rrS2.value,float(polarS.value),xpicS.value, equipS.value, float(freqS.value), cardS.value, float(bwS.value), ref_mod, amS.value]
                     # print(truc)
                     # plotAvail(self,g1a,g1b,el,geoloc,rr,tau,p0,xpic,equip,freq,card,bw,ref_mod,am)
@@ -1640,8 +1640,8 @@ def main():
                         ("AM :", str(amS3.value))]))
 
                 def add_data3(event):
-                    g1a = float(poubelle.getAntGain(float(g1aS3.value.__str__()), freq))
-                    g1b = float(poubelle.getAntGain(float(g1bS3.value.__str__()), freq))
+                    g1a = float(scenario.getAntGain(float(g1aS3.value.__str__()), freq))
+                    g1b = float(scenario.getAntGain(float(g1bS3.value.__str__()), freq))
                     curr_dat = plt.ColumnDataSource(graph.plotAvail(g1a, g1b, el, geoloc,
                                              rrS3.value, float(polarS3.value), p0, xpicS3.value, equipS3.value,
                                              float(freqS3.value), cardS3.value, float(bwS3.value), refS3.value, amS3.value))
@@ -1771,33 +1771,33 @@ def main():
                         data = r.json()
                         latitude = float(data[0]['lat'])
                         longitude = float(data[0]['lon'])
-                        poubelle.GEOLOCATE = (latitude, longitude)
+                        scenario.GEOLOCATE = (latitude, longitude)
                     except:
                         para ="""<p style="color:red">An error as been detected while requesting geocoding for site location.Please check your internet connection or that you provided a correct address</p>"""
 
                         return render_template('graphs.html',graph1=para)
 
-                poubelle.DIA1 = float(link.gae.data)
-                poubelle.DIA2 = float(link.gbe.data)
-                poubelle.ELEVATION = float(link.ele.data)
+                scenario.DIA1 = float(link.gae.data)
+                scenario.DIA2 = float(link.gbe.data)
+                scenario.ELEVATION = float(link.ele.data)
                 if form.sp.am.data == '1':
                     if form.sp.peak.data != None and form.sp.avaiPIR.data:
-                        poubelle.PIR = float(form.sp.peak.data)
-                        poubelle.AVAI_PIR = float(form.sp.avaiPIR.data)
-                    else: poubelle.PIR = 0.0
-                    poubelle.am = True
+                        scenario.PIR = float(form.sp.peak.data)
+                        scenario.AVAI_PIR = float(form.sp.avaiPIR.data)
+                    else: scenario.PIR = 0.0
+                    scenario.am = True
                 else:
-                    poubelle.PIR = 0.0
-                    poubelle.am = False
+                    scenario.PIR = 0.0
+                    scenario.am = False
 
 
-                poubelle.MARG = float(form.sp.margin.data)
-                poubelle.POLAR = 0 if link.polar.data=='h' else 90 # float(form.polar.data)
+                scenario.MARG = float(form.sp.margin.data)
+                scenario.POLAR = 0 if link.polar.data=='h' else 90 # float(form.polar.data)
                 if link.rre.data != '':
-                    poubelle.RR = float(link.rre.data)
-                poubelle.AVAILABILITY  = float(link.p_entry.data)
-                poubelle.CIR = float(form.sp.capa.data)
-                [eb_stab,ex_tab,e_mw_tab,mw_stab,mw_xtab] = poubelle.getScenarii(0,float(form.sp.capa.data),float(link.p_entry.data),float(form.sp.margin.data))
+                    scenario.RR = float(link.rre.data)
+                scenario.AVAILABILITY  = float(link.p_entry.data)
+                scenario.CIR = float(form.sp.capa.data)
+                [eb_stab,ex_tab,e_mw_tab,mw_stab,mw_xtab] = scenario.getScenarii(0,float(form.sp.capa.data),float(link.p_entry.data),float(form.sp.margin.data))
                 return render_template('tables.html',table=eb_stab,ex_tab=ex_tab,e_mw_tab=e_mw_tab,mw_stab=mw_stab,mw_xtab=mw_xtab,title='Huawei scenario')
             else:
                 flash(u'Something is wrong in the form','error')
@@ -1822,34 +1822,34 @@ def main():
                         data = r.json()
                         latitude = float(data[0]['lat'])
                         longitude = float(data[0]['lon'])
-                        poubelle_2.GEOLOCATE = (latitude, longitude)
+                        scenario_2.GEOLOCATE = (latitude, longitude)
                     except:
                         para = """<p style="color:red">An error as been detected while requesting geocoding for site location.Please check your internet connection or that you provided a correct address</p>"""
                         return render_template('graphs.html', graph1=para)
 
-                poubelle_2.DIA1 = float(link.gae.data)
-                poubelle_2.DIA2 = float(link.gbe.data)
-                poubelle_2.ELEVATION = float(link.ele.data)
+                scenario_2.DIA1 = float(link.gae.data)
+                scenario_2.DIA2 = float(link.gbe.data)
+                scenario_2.ELEVATION = float(link.ele.data)
 
                 if form.sp.am.data == '1':
                     if form.sp.peak.data != None and form.sp.avaiPIR.data:
-                        poubelle_2.PIR = float(form.sp.peak.data)
-                        poubelle_2.AVAI_PIR = float(form.sp.avaiPIR.data)
+                        scenario_2.PIR = float(form.sp.peak.data)
+                        scenario_2.AVAI_PIR = float(form.sp.avaiPIR.data)
                     else:
-                        poubelle_2.PIR = 0.0
-                    poubelle_2.am = True
+                        scenario_2.PIR = 0.0
+                    scenario_2.am = True
                 else:
-                    poubelle_2.PIR = 0.0
-                    poubelle_2.am = False
+                    scenario_2.PIR = 0.0
+                    scenario_2.am = False
 
-                poubelle_2.MARG = float(form.sp.margin.data)
-                poubelle_2.POLAR = 0 if link.polar.data=='h' else 90 # float(form.polar.data)
+                scenario_2.MARG = float(form.sp.margin.data)
+                scenario_2.POLAR = 0 if link.polar.data=='h' else 90 # float(form.polar.data)
                 if link.rre.data != '':
-                    poubelle_2.RR = float(link.rre.data)
-                poubelle_2.DISTANCE = float(form.sp.dist.data)
-                poubelle_2.AVAILABILITY  = float(link.p_entry.data)
-                poubelle_2.CIR = float(form.sp.capa.data)
-                [eb_stab,ex_tab,e_mw_tab,mw_stab,mw_xtab] = poubelle_2.getScenarii(0,float(form.sp.capa.data),float(link.p_entry.data),float(form.sp.margin.data))
+                    scenario_2.RR = float(link.rre.data)
+                scenario_2.DISTANCE = float(form.sp.dist.data)
+                scenario_2.AVAILABILITY  = float(link.p_entry.data)
+                scenario_2.CIR = float(form.sp.capa.data)
+                [eb_stab,ex_tab,e_mw_tab,mw_stab,mw_xtab] = scenario_2.getScenarii(0,float(form.sp.capa.data),float(link.p_entry.data),float(form.sp.margin.data))
                 return render_template('tables.html',table=eb_stab,ex_tab=ex_tab,e_mw_tab=e_mw_tab,mw_stab=mw_stab,mw_xtab=mw_xtab,title='Ericsson scenario')
             else:
                 flash(u'Something is wrong in the form','error')
