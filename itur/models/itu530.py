@@ -81,8 +81,10 @@ class __ITU530():
         return self.instance.XPD_outage_clear_air(lat, lon, h_e, h_r, d, f,
                                                   XPD_g, C0_I, XPIF)
 
-    def XPD_outage_precipitation(self, R001, d, f, el, C0_I,XPIF=0):
-        return self.instance.XPD_outage_precipitation(R001, d, f, el, C0_I,XPIF)
+    def XPD_outage_precipitation(self, lat, lon, d, f, el, C0_I, tau=45,
+                                 U0=15, XPIF=0):
+        return self.instance.XPD_outage_precipitation(lat, lon, d, f, el, C0_I,
+                                                      tau, U0, XPIF)
 
 
 class _ITU530_17():
@@ -235,9 +237,9 @@ class _ITU530_17():
         # Eq. 35b [-]
         C2 = 0.855 * C0 + 0.546 * (1 - C0)
         C3 = 0.139 * C0 + 0.043 * (1 - C0)
-        # Eq. 35c [-]
+        print(p)# Eq. 35c [-]
         Ap = A001 * C1 * p ** (- (C2 + C3 * np.log10(p)))      # Eq. 34 [dB]
-        return Ap+1
+        return Ap
 
     def inverse_rain_attenuation(
             self, lat, lon, d, f, el, Ap, tau=45, R001=None):
@@ -247,46 +249,40 @@ class _ITU530_17():
         """
         # Step 1: Obtain the rain rate R0.01 exceeded for 0.01% of the time
         # (with an integration time of 1 min).
-        Ap = Ap -1
         if R001 is None:
             R001 = rainfall_rate(lat, lon, 0.01).value
+
         # Step 2: Compute the specific attenuation, gammar (dB/km) for the
         # frequency, polarization and rain rate of interest using
         # Recommendation ITU-R P.838
-        #dcr = d
-        #if len(str(d).split('_'))>1 : d = float(str(d).split('_')[0])
+
         gammar = rain_specific_attenuation(R001, f, el, tau).value
         _, alpha = rain_specific_attenuation_coefficients(f, el, tau)
 
         # Step 3: Compute the effective path length, deff, of the link by
         # multiplying the actual path length d by a distance factor r
 
+
         def func_bisect(p):
             return A001 * C1 * p ** (- (C2 + C3 * np.log10(p))) - Ap
 
-        # r = 1 / (0.477 * d ** 0.633 * R001 ** (0.073 * alpha) *
-        #          f**(0.123) - 10.579 * (1 - np.exp(-0.024 * d)))
-        #
-        # deff = np.minimum(r, 2.5)*d
-        #print('d : '+str(d)+' ; deff : '+str(deff))
+        r = 1 / (0.477 * d ** 0.633 * R001 ** (0.073 * alpha) *
+                 f**(0.123) - 10.579 * (1 - np.exp(-0.024 * d)))
+        deff = np.minimum(r, 2.5)*d
         # Step 4: An estimate of the path attenuation exceeded for 0.01% of
         # the time is given by:
-        A001 = gammar * d
-        #if len(str(dcr).split('_'))>1 : return deff
+        A001 = gammar * deff
+
         # Step 5: The attenuation exceeded for other percentages of time p in
         # the range 0.001% to 1% may be deduced from the following power law
-
         C0 = np.where(f >= 10, 0.12 + 0.4 * (np.log10(f / 10)**0.8), 0.12)
         C1 = (0.07**C0) * (0.12**(1 - C0))
         C2 = 0.855 * C0 + 0.546 * (1 - C0)
         C3 = 0.139 * C0 + 0.043 * (1 - C0)
         #return anderson(func_bisect,1,iter = 15,w0 = 0.6)
-        if Ap>0:
-            ln_p = np.roots([-C3/np.log(10),-C2,-np.log(Ap/(A001*C1))])
-            ln_p=np.complex(ln_p[1])
-            p=np.exp(ln_p)
-        else:
-            p=100
+        ln_p = np.roots([-C3/np.log(10),-C2,-np.log(Ap/(A001*C1))])
+        ln_p=np.complex(ln_p[1])
+        p=np.exp(ln_p)
         if float(complex(p).real)<100:
             if float(complex(p).real+complex(p).imag)<0.00001:
                 return 0
@@ -341,22 +337,19 @@ class _ITU530_17():
         return P_XP
 
     @classmethod
-    def XPD_outage_precipitation(self, R001, d, f, el, C0_I, XPIF=0):
+    def XPD_outage_precipitation(self, lat, lon, d, f, el, C0_I, tau=45,
+                                 U0=15, XPIF=0):
         """ Implementation of 'XPD_outage_precipitation' method for recommendation
         ITU-P R.530-16. See documentation for function
         'ITUR530.XPD_outage_precipitation'
         """
-
         # Step 1: Determine the path attenuation, A0.01 (dB), exceeded
         # for 0.01% of the time
-        A001 = self.rain_attenuation(0, 0, d, f, el, 0.01,45,R001)
-        tau=45
-        U0 = 15
+        A001 = self.rain_attenuation(lat, lon, d, f, el, 0.01)
+
         # Step 2: Determine the equivalent path attenuation, Ap
         U = U0 + 30 * np.log10(f)
         V = np.where(f < 20, 12.8 * f**0.19, 22.6)
-        print('c0 '+str(C0_I))
-        print('xpif '+str(XPIF))
         Ap = 10 ** ((U - C0_I + XPIF) / V)                      # Eq. 112
 
         # Step 3: Determine parameters m and n
@@ -762,7 +755,7 @@ def inverse_rain_attenuation(lat, lon, d, f, el, Ap, tau=45, R001=None):
     lat = prepare_input_array(lat)
     lon = prepare_input_array(lon)
     lon = np.mod(lon, 360)
-    #d = prepare_quantity(d, u.km, 'Distance between antennas')
+    d = prepare_quantity(d, u.km, 'Distance between antennas')
     f = prepare_quantity(f, u.GHz, 'Frequency')
     el = prepare_quantity(el, u.deg, 'Elevation Angle')
     Ap = prepare_quantity(Ap, u.dB, 'Fade depth')
@@ -899,7 +892,8 @@ def XPD_outage_clear_air(lat, lon, h_e, h_r, d, f, XPD_g, C0_I, XPIF=0):
     return prepare_output_array(val, type_output) * u.percent
 
 
-def XPD_outage_precipitation(R001, d, f, el, C0_I, XPIF=0):
+def XPD_outage_precipitation(lat, lon, d, f, el, C0_I, tau=45,
+                             U0=15, XPIF=0):
     """ Estimate the probability of outage due to cross-polar discrimnation
     reduction due to clear-air effects, assuming that a targe C0_I is
     required.
@@ -946,12 +940,16 @@ def XPD_outage_precipitation(R001, d, f, el, C0_I, XPIF=0):
     terrestrial line-of-sight systems: https://www.itu.int/rec/R-REC-P.530/en
     """
     global __model
+    type_output = type(lat)
+    lat = prepare_input_array(lat)
+    lon = prepare_input_array(lon)
+    lon = np.mod(lon, 360)
     d = prepare_quantity(d, u.km, 'Distance between antennas')
     f = prepare_quantity(f, u.GHz, 'Frequency')
     C0_I = prepare_quantity(C0_I, u.dB, 'Carrier-to-interference ratio')
-#    U0 = prepare_quantity(U0, u.dB, 'Coefficient for the CPA')
+    U0 = prepare_quantity(U0, u.dB, 'Coefficient for the CPA')
     XPIF = prepare_quantity(
         XPIF, u.dB, 'Cross-polarization improvement factor')
-    type_output=type(float())
-    val = __model.XPD_outage_precipitation(R001, d, f,el, C0_I,XPIF)
+
+    val = __model.XPD_outage_precipitation(lat, lon, d, f, C0_I, tau, U0, XPIF)
     return prepare_output_array(val, type_output) * u.percent

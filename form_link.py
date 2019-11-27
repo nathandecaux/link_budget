@@ -435,9 +435,9 @@ def main():
                 # key = 'AIzaSyA3nLe6yUCTTMB82u1LTuWoyGJGvr8gBZg'
                 location_detail = {'q': location, 'format': 'json'}
                 r = ''
-
+                proxies={ "http": 'http://proxy.rd.francetelecom.fr:8080'}
                 try:
-                    r = requests.get(url=URL, params=location_detail, verify=False, timeout=5)
+                    r = requests.get(url=URL, params=location_detail, verify=False, timeout=5,proxies=proxies)
                     data = r.json()
                     latitude = float(data[0]['lat'])
                     longitude = float(data[0]['lon'])
@@ -1182,8 +1182,9 @@ def main():
                 # key = 'AIzaSyA3nLe6yUCTTMB82u1LTuWoyGJGvr8gBZg'
                 location_detail = {'q': location, 'format': 'json'}
                 r=''
+                proxies={ "http": 'http://proxy.rd.francetelecom.fr:8080'}
                 try:
-                    r = requests.get(url=URL, params=location_detail,verify=False,timeout=5)
+                    r = requests.get(url=URL, params=location_detail,verify=False,timeout=5,proxies=proxies)
                     data = r.json()
                     latitude = float(data[0]['lat'])
                     longitude = float(data[0]['lon'])
@@ -1764,9 +1765,9 @@ def main():
                 location_detail = {'q': location,'format':'json'}
                 if location != '' and link.rre.data == '':
                     s = requests.Session()
-                    
+                    proxies={ "http": 'http://proxy.rd.francetelecom.fr:8080'}
                     try:
-                        r = requests.get(url=URL, params=location_detail, verify=False, timeout=5)
+                        r = requests.get(url=URL, params=location_detail, verify=False, timeout=5,proxies=proxies)
                         data = r.json()
                         latitude = float(data[0]['lat'])
                         longitude = float(data[0]['lon'])
@@ -1815,9 +1816,9 @@ def main():
                 location_detail = {'q': location,'format':'json'}
                 if location != '' and link.rre.data == '':
                     s = requests.Session()
-                   
+                    proxies={ "http": 'http://proxy.rd.francetelecom.fr:8080'}
                     try:
-                        r = requests.get(url=URL, params=location_detail,verify=False, timeout=5)
+                        r = requests.get(url=URL, params=location_detail,verify=False, timeout=5,proxies=proxies)
                         data = r.json()
                         latitude = float(data[0]['lat'])
                         longitude = float(data[0]['lon'])
@@ -1900,7 +1901,7 @@ def main():
             else:
                 flash("Please select a database and set a name for the equipment")
                 return redirect(request.url)
-            os.system('rm -rf static/files/')
+            os.system('rm -rf static/files/*')
         return render_template("graphs.html",graph1='''
         <div class= "container">
             <h1>Upload new File</h1>
@@ -1974,7 +1975,7 @@ def main():
                 </div>
                 ''')
 
-    app.run(host='0.0.0.0',port=5000,debug=True,threaded=True)
+    app.run(host='0.0.0.0',port=5000,threaded=True)
 
 
 if __name__== '__main__':

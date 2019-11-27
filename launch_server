@@ -1,0 +1,9 @@
+#!/bin/sh
+echo "Clearing logs"
+rm -f /root/link_budget/nohup.out
+echo "Stopping Python process"
+killall python3.6
+nohup /root/venv/bin/python3.6 /root/link_budget/form_link.py 172.20.183.173 &
+echo "Application starting"
+sleep 5
+cat /root/link_budget/nohup.out
