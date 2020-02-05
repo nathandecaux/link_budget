@@ -200,13 +200,13 @@ def getScenarii(test,CIR,AVAILABILITY,MARG):
     for pro in e_bands:
         for leg in legacy:
             if leg[1] == 18.0 or leg[1] == 23:
-                if np.isclose(float(pro[-3]+leg[-3]),CIR,atol=MARG) and not np.isclose(float(pro[-3]),CIR,atol=MARG) and not np.isclose(float(leg[-3]),CIR,atol=MARG):
+                if np.isclose(float(float(pro[-3])+float(leg[-3])),CIR,atol=MARG) and not np.isclose(float(pro[-3]),CIR,atol=MARG) and not np.isclose(float(leg[-3]),CIR,atol=MARG):
                     i = i + 1
                     met = str(i)
 
                     goodCIR['multi'].append((pro,leg))
-                    e_mw_ditems.append(DualItem(met,pro[0],leg[0],pro[-3],leg[-3],pro[-3]+leg[-3],np.minimum(pro[-1],leg[-1])))
-                    outstr=outstr+str(pro[0])+' + '+str(leg[0])+' -- '+str(pro[-3]+leg[-3])+' Mbps -- '+str(pro[-1])+'%\n'
+                    e_mw_ditems.append(DualItem(met,pro[0],leg[0],pro[-3],leg[-3],float(pro[-3])+float(leg[-3]),np.minimum(float(pro[-1]),float(leg[-1]))))
+                    outstr=outstr+str(pro[0])+' + '+str(leg[0])+' -- '+str(float(pro[-3])+float(leg[-3]))+' Mbps -- '+str(pro[-1])+'%\n'
 
     outstr=outstr+'---- MW (1+0) ----\n'
     i=0

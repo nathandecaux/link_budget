@@ -21,7 +21,6 @@ import tinydb
 import os,sys
 import webbrowser
 import pickle
-import poubelle
 import requests
 
 
