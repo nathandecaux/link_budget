@@ -38,7 +38,7 @@ MarkupSafe==1.1.1
 matplotlib==3.1.0
 mccabe==0.6.1
 mpldatacursor==0.6.2
-numpy==1.16.3
+numpy==1.22.0
 packaging==19.0
 pefile==2019.4.18
 Pillow==6.2.0
