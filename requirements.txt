@@ -6,7 +6,7 @@ Babel==2.7.0
 bokeh==1.2.0
 bottle==0.12.16
 bottle-websocket==0.2.9
-certifi==2019.3.9
+certifi==2022.12.7
 cffi==1.12.3
 chardet==3.0.4
 Click==7.0
